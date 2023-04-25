@@ -8,13 +8,13 @@ const UPGRADES = [
     {
         id: 0,
         name: "First upgrade",
-        cost: 500,
+        cost: 100,
         gives: 1,
     },
     {
         id: 1,
         name: "Second upgrade",
-        cost: 1800,
+        cost: 400,
         gives: 2,
     },
 ]
@@ -99,15 +99,20 @@ const Cookiezi = {
         this.amount += this.cps / 20;
     },
 
+    update_text() {
+        amount_text.textContent = this.amount.toFixed();
+        tap_power.textContent   = "Tap power: " + this.power;
+        cps.textContent         = "CP/S: " + this.cps;
+        upgrades_c.textContent  = "Upgrades count: " + this.upgrades.reduce((a, b) => a + b, 0);
+    },
+
     initialize() {
         this.update();
     },
 
     update() {
-        amount_text.textContent = this.amount.toFixed();
-        tap_power.textContent   = "Tap power: " + this.power;
-        cps.textContent         = "CP/S: " + this.cps;
-        upgrades_c.textContent  = "Upgrades count: " + this.upgrades.reduce((a, b) => a + b, 0);
+        this.invoke_cps();
+        this.update_text();
     },
 }
 
@@ -142,5 +147,4 @@ Cookiezi.populate_cps_shop();
 
 setInterval(() => {
     Cookiezi.update();
-    Cookiezi.invoke_cps();
 }, 50)
