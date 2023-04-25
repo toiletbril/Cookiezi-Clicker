@@ -8,13 +8,13 @@ const UPGRADES = [
     {
         id: 0,
         name: "First upgrade",
-        cost: 1000,
+        cost: 500,
         gives: 1,
     },
     {
         id: 1,
         name: "Second upgrade",
-        cost: 3000,
+        cost: 1800,
         gives: 2,
     },
 ]
@@ -36,7 +36,7 @@ const Cookiezi = {
         key2: "KeyX",
     },
 
-    populate_shop() {
+    shop() {
         for (const i in UPGRADES) {
             const item = UPGRADES[i];
 
@@ -45,8 +45,8 @@ const Cookiezi = {
             const item_text = document.createTextNode(`${item.name}, ${item.cost}c`);
             const buy_button = document.createElement("button");
 
-            buy_button.setAttribute("id", item.name);
-            buy_button.onclick = this.buy(this, item);
+            buy_button.setAttribute("id", "item" + item.id);
+            buy_button.onclick = this.buy(this, UPGRADES[item.id]);
 
             buy_button.appendChild(item_text);
             div.appendChild(buy_button);
@@ -63,18 +63,22 @@ const Cookiezi = {
             return;
         }
 
-        UPGRADES[item.id].cost *= 1.33;
+        UPGRADES[item.id].cost = (UPGRADES[item.id].cost * 1.33).toFixed();
+
+        let button = document.getElementById("item" + item.id);
+        button.textContent = `${item.name}, ${item.cost}c`;
 
         self.amount -= item.cost;
-        self.power += item.gives;
+        self.cps += item.gives;
         self.upgrades[item.id] += 1;
-
-        self.update();
     },
 
     click() {
         this.amount += this.power;
-        this.update()
+    },
+
+    invoke_cps() {
+        this.amount += this.cps / 20;
     },
 
     initialize() {
@@ -82,7 +86,7 @@ const Cookiezi = {
     },
 
     update() {
-        amount_text.textContent = this.amount;
+        amount_text.textContent = this.amount.toFixed();
         tap_power.textContent   = "Tap power: " + this.power;
         cps.textContent         = "CP/S: " + this.cps;
         upgrades_c.textContent  = "Upgrades count: " + this.upgrades.reduce((a, b) => a + b, 0);
@@ -99,4 +103,9 @@ document.addEventListener("keypress", (k) => {
 });
 
 Cookiezi.initialize();
-Cookiezi.populate_shop();
+Cookiezi.shop();
+
+setInterval(() => {
+    Cookiezi.update();
+    Cookiezi.invoke_cps();
+}, 50)
