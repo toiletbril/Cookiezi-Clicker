@@ -32,8 +32,8 @@ const Cookiezi = {
     upgrades: create_upgrade_array(),
 
     settings: {
-        key1: "KeyZ",
-        key2: "KeyX",
+        key1: "KeyG",
+        key2: "KeyH",
     },
 
     shop() {
@@ -63,14 +63,14 @@ const Cookiezi = {
             return;
         }
 
-        UPGRADES[item.id].cost = (UPGRADES[item.id].cost * 1.33).toFixed();
-
-        let button = document.getElementById("item" + item.id);
-        button.textContent = `${item.name}, ${item.cost}c`;
-
         self.amount -= item.cost;
         self.cps += item.gives;
         self.upgrades[item.id] += 1;
+
+        UPGRADES[item.id].cost = (UPGRADES[item.id].cost * 1.33).toFixed();
+        let button = document.getElementById("item" + item.id);
+        button.textContent = `${item.name}, ${item.cost}c`;
+
     },
 
     click() {
