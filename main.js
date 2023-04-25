@@ -32,11 +32,17 @@ const Cookiezi = {
     upgrades: create_upgrade_array(),
 
     settings: {
-        key1: "KeyG",
-        key2: "KeyH",
+        key1: {
+            code: "KeyG",
+            is_down: false
+        },
+        key2: {
+            code: "KeyH",
+            is_down: false
+        }
     },
 
-    shop() {
+    populate_cps_shop() {
         for (const i in UPGRADES) {
             const item = UPGRADES[i];
 
@@ -61,7 +67,7 @@ const Cookiezi = {
 
     buy: (self, item) => () => {
         if (self.amount < item.cost) {
-            console.log("Insufficient amount, can't buy item" + item.id);
+            alert("Not enough amount to buy \"" + item.name + "\" :(");
             return;
         }
 
@@ -73,6 +79,16 @@ const Cookiezi = {
         let button = document.getElementById("item" + item.id);
         button.textContent = `${item.name}, ${item.cost}c`;
 
+    },
+
+    press_key(k) {
+        if (k.is_down) return;
+        this.click();
+        k.is_down = true;
+    },
+
+    unpress_key(k) {
+        k.is_down = false;
     },
 
     click() {
@@ -95,17 +111,34 @@ const Cookiezi = {
     },
 }
 
-document.addEventListener("keypress", (k) => {
+document.addEventListener("keydown", (k) => {
+    let k1 = Cookiezi.settings.key1;
+    let k2 = Cookiezi.settings.key2;
     switch (k.code) {
-        case Cookiezi.settings.key1:
-        case Cookiezi.settings.key2: {
-            Cookiezi.click();
+        case k1.code: {
+            Cookiezi.press_key(k1)
+        } break;
+        case k2.code: {
+            Cookiezi.press_key(k2)
+        } break;
+    }
+});
+
+document.addEventListener("keyup", (k) => {
+    let k1 = Cookiezi.settings.key1;
+    let k2 = Cookiezi.settings.key2;
+    switch (k.code) {
+        case k1.code: {
+            Cookiezi.unpress_key(k1)
+        } break;
+        case k2.code: {
+            Cookiezi.unpress_key(k2)
         } break;
     }
 });
 
 Cookiezi.initialize();
-Cookiezi.shop();
+Cookiezi.populate_cps_shop();
 
 setInterval(() => {
     Cookiezi.update();
