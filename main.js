@@ -44,12 +44,14 @@ const Cookiezi = {
             const div = document.createElement("div");
             const item_text = document.createTextNode(`${item.name}, ${item.cost}c`);
             const buy_button = document.createElement("button");
+            const gives = document.createTextNode(item.gives + " CP/S")
 
             buy_button.setAttribute("id", "item" + item.id);
             buy_button.onclick = this.buy(this, UPGRADES[item.id]);
 
             buy_button.appendChild(item_text);
             div.appendChild(buy_button);
+            div.appendChild(gives);
 
             item_element.appendChild(div);
 
