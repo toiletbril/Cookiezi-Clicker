@@ -8,28 +8,28 @@ const upgrades_c = document.getElementById("upgrades_count") as HTMLElement;
 interface ICpsUpgrade {
     id: number,
     name: string,
-    cost: bigint,
-    gives: bigint
+    cost: number,
+    gives: number
 }
 
 const CPS_UPGRADES: ICpsUpgrade[] = [
     {
         id: 0,
         name: "First CP/S upgrade",
-        cost: 100n,
-        gives: 1n,
+        cost: 100,
+        gives: 1,
     },
     {
         id: 1,
         name: "Second CP/S upgrade",
-        cost: 400n,
-        gives: 2n,
+        cost: 400,
+        gives: 2,
     },
     {
         id: 2,
         name: "Third CP/S upgrade",
-        cost: 1600n,
-        gives: 3n,
+        cost: 1600,
+        gives: 3,
     },
 ]
 
@@ -37,9 +37,9 @@ interface IGeneralUpgrade {
     id: number,
     name: string,
     desc: string,
-    cost: bigint,
+    cost: number,
     gives: {
-        power?: BigInt,
+        power?: number,
         multipliers?: number[]
     }
 }
@@ -49,9 +49,9 @@ const GENERAL_UPGRADES: IGeneralUpgrade[] = [
         id: 0,
         name: "First upgrade",
         desc: "+1 tap power",
-        cost: 1000n,
+        cost: 1000,
         gives: {
-            power: 1n
+            power: 1
         }
     }
 ]
@@ -75,9 +75,9 @@ interface ISettings {
 }
 
 class Cookiezi {
-    amount: bigint;
-    power: bigint;
-    cps: bigint;
+    amount: number;
+    power: number;
+    cps: number;
 
     cps_upgrades: number[];
     upgrades: number[];
@@ -85,9 +85,9 @@ class Cookiezi {
     settings: ISettings;
 
     constructor() {
-        this.amount = 0n;
-        this.power = 1n;
-        this.cps = 0n;
+        this.amount = 0;
+        this.power = 1;
+        this.cps = 0;
 
         this.cps_upgrades = create_upgrade_array(CPS_UPGRADES);
         this.upgrades = create_upgrade_array(GENERAL_UPGRADES);
@@ -163,7 +163,7 @@ class Cookiezi {
             self.cps_upgrades[item.id] += 1;
 
             // Increase price
-            CPS_UPGRADES[item.id]!.cost = CPS_UPGRADES[item.id]!.cost * BigInt(UPGRADE_MULTIPLIER * 100) / 100n;
+            CPS_UPGRADES[item.id]!.cost = Math.floor(CPS_UPGRADES[item.id]!.cost * UPGRADE_MULTIPLIER);
 
             // Update UI
             let button = document.getElementById("cps_item" + item.id) as HTMLButtonElement;
@@ -207,26 +207,26 @@ class Cookiezi {
     }
 
     invoke_cps(): void {
-        this.amount += this.cps / 20n;
+        this.amount += this.cps / 20;
     }
 
     update_text(): void {
-        amount_text.textContent = this.amount.toString();
+        amount_text.textContent = Math.floor(this.amount).toString();
         tap_power.textContent = "Tap power: " + this.power;
         cps.textContent = "CP/S: " + this.cps;
         upgrades_c.textContent = "Upgrades count: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
     }
 
     update_item_stats(): void {
-        let result_cps = 0n;
-        let result_power = 0n;
+        let result_cps = 0;
+        let result_power = 0;
 
         for (const i in this.cps_upgrades) {
-            result_cps += CPS_UPGRADES[i]!.gives * BigInt(this.cps_upgrades[i]!);
+            result_cps += CPS_UPGRADES[i]!.gives * this.cps_upgrades[i]!;
         }
 
         for (const i in this.upgrades) {
-            //
+            // todo
         }
 
         this.power = result_power;
