@@ -6,6 +6,7 @@ const CPS_TEXT = document.getElementById("cps") as HTMLElement;
 const UPGRADES_COUNT_TEXT = document.getElementById("upgrades_count") as HTMLElement;
 const CHANGE_KEYS_BUTTON = document.getElementById("change_keys") as HTMLButtonElement;
 const KEYS_TEXT = document.getElementById("keys") as HTMLButtonElement;
+const MAIN_DIV = document.getElementById("main") as HTMLDivElement;
 
 const CENT = "¢";
 
@@ -246,7 +247,7 @@ class Cookiezi {
         AMOUNT_TEXT.textContent = Math.floor(this.amount).toString() + CENT;
         TAP_POWER_TEXT.textContent = "Tap power: " + this.power;
         const speed = (this.cps + this.clicks.tapped / (this.clicks.ticks + 20) * 20);
-        CPS_TEXT.textContent = "CP/S: " + speed.toFixed(1) + " (" +  Math.round(speed * 60 / 4) + " BPM)";
+        CPS_TEXT.textContent = "CP/S: " + speed.toFixed(1) + " (" + Math.round(speed * 60 / 4) + " BPM)";
         UPGRADES_COUNT_TEXT.textContent = "Upgrades bought: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
     }
 

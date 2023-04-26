@@ -7,6 +7,7 @@ const CPS_TEXT = document.getElementById("cps");
 const UPGRADES_COUNT_TEXT = document.getElementById("upgrades_count");
 const CHANGE_KEYS_BUTTON = document.getElementById("change_keys");
 const KEYS_TEXT = document.getElementById("keys");
+const MAIN_DIV = document.getElementById("main");
 const CENT = "¢";
 const CPS_UPGRADES = [
     {
