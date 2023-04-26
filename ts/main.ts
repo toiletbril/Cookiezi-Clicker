@@ -118,13 +118,6 @@ class Cookiezi {
     power: number;
     cps: number;
 
-    clicks = {
-        tapped: 0,
-        tick: 1,
-        tapped_int: 0,
-        should_decrease: false
-    }
-
     cps_upgrades: number[];
     upgrades: number[];
 
@@ -151,6 +144,13 @@ class Cookiezi {
             ],
             is_changing_keys: -1
         }
+    }
+
+    clicks = {
+        should_decrease: false,
+        stopped_interval: 0,
+        tapped: 0,
+        ticks: 1
     }
 
     populate_cps_shop(): void {
@@ -216,16 +216,16 @@ class Cookiezi {
 
     press_key(k: IKey): void {
         if (k.is_down) return;
+
         k.is_down = true;
         this.clicks.tapped += 1;
-
         this.click();
 
-        clearInterval(this.clicks.tapped_int);
+        clearInterval(this.clicks.stopped_interval);
 
         this.clicks.should_decrease = false;
 
-        this.clicks.tapped_int = setTimeout(() => {
+        this.clicks.stopped_interval = setTimeout(() => {
             this.clicks.should_decrease = true;
         }, 1000)
     }
@@ -243,9 +243,9 @@ class Cookiezi {
     }
 
     update_text(): void {
-        AMOUNT_TEXT.textContent = Math.floor(this.amount).toString();
+        AMOUNT_TEXT.textContent = Math.floor(this.amount).toString() + CENT;
         TAP_POWER_TEXT.textContent = "Tap power: " + this.power;
-        CPS_TEXT.textContent = "CP/S: " + (this.cps + this.clicks.tapped / (this.clicks.tick + 20) * 20).toFixed(1);
+        CPS_TEXT.textContent = "CP/S: " + (this.cps + this.clicks.tapped / (this.clicks.ticks + 20) * 20).toFixed(1);
         UPGRADES_COUNT_TEXT.textContent = "Upgrades bought: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
     }
 
@@ -264,10 +264,12 @@ class Cookiezi {
         this.update_text();
 
         if (this.clicks.should_decrease && this.clicks.tapped > 0) this.clicks.tapped -= 1;
-        else this.clicks.should_decrease = false;
-
-        if (this.clicks.tapped > 0) this.clicks.tick += 1;
-        else this.clicks.tick = 0;
+        else {
+            this.clicks.should_decrease = false;
+            this.clicks.ticks += 1;
+        }
+        if (this.clicks.tapped <= 0)
+            this.clicks.ticks = 0;
     }
 }
 
