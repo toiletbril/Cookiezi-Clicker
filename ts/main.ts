@@ -4,6 +4,8 @@ const GENERAL_SHOP_ITEMS_LIST = document.getElementById("power_shop_items") as H
 const TAP_POWER_TEXT = document.getElementById("tap_power") as HTMLElement;
 const CPS_TEXT = document.getElementById("cps") as HTMLElement;
 const UPGRADES_COUNT_TEXT = document.getElementById("upgrades_count") as HTMLElement;
+const CHANGE_KEYS_BUTTON = document.getElementById("change_keys") as HTMLButtonElement;
+const KEYS_TEXT = document.getElementById("keys") as HTMLButtonElement;
 
 const CENT = "¢";
 
@@ -41,6 +43,8 @@ const GENERAL_UPGRADES: IGeneralUpgrade[] = [
 ]
 
 const UPGRADE_COST_MULTIPLIER = 1.15;
+
+////////////
 
 function create_upgrade_array<T>(arr: Array<T>) {
     let a = new Array<number>;
@@ -89,13 +93,13 @@ interface IGeneralUpgrade {
 }
 
 interface IKey {
-    code: string,
+    key: string,
     is_down: boolean
 }
 
 interface ISettings {
-    key1: IKey,
-    key2: IKey
+    keys: IKey[],
+    is_changing_keys: number
 }
 
 ////////////
@@ -119,14 +123,17 @@ class Cookiezi {
         this.upgrades = create_upgrade_array(GENERAL_UPGRADES);
 
         this.settings = {
-            key1: {
-                code: "KeyG",
-                is_down: false
-            },
-            key2: {
-                code: "KeyH",
-                is_down: false
-            }
+            keys: [
+                {
+                    key: "z",
+                    is_down: false
+                },
+                {
+                    key: "x",
+                    is_down: false
+                },
+            ],
+            is_changing_keys: -1
         }
     }
 
@@ -247,27 +254,46 @@ setInterval(() => {
 }, 50)
 
 document.addEventListener("keydown", (k) => {
-    let k1 = cookiezi.settings.key1;
-    let k2 = cookiezi.settings.key2;
-    switch (k.code) {
-        case k1.code: {
+
+    const k1 = cookiezi.settings.keys[0]!;
+    const k2 = cookiezi.settings.keys[1]!;
+
+    if (cookiezi.settings.is_changing_keys >= 0) {
+        cookiezi.settings.keys[cookiezi.settings.is_changing_keys]!.key = k.key;
+        ++cookiezi.settings.is_changing_keys;
+        KEYS_TEXT.textContent = `Tap ${k1.key.toUpperCase()}/${k2.key.toUpperCase()} to gain points.`;
+        if (cookiezi.settings.is_changing_keys > 1) {
+            cookiezi.settings.is_changing_keys = -1;
+            CHANGE_KEYS_BUTTON.textContent = "Change keys...";
+        }
+        return;
+    }
+
+    switch (k.key.toLowerCase()) {
+        case k1.key: {
             cookiezi.press_key(k1)
         } break;
-        case k2.code: {
+        case k2.key: {
             cookiezi.press_key(k2)
         } break;
     }
 });
 
 document.addEventListener("keyup", (k) => {
-    let k1 = cookiezi.settings.key1;
-    let k2 = cookiezi.settings.key2;
-    switch (k.code) {
-        case k1.code: {
+    const k1 = cookiezi.settings.keys[0]!;
+    const k2 = cookiezi.settings.keys[1]!;
+
+    switch (k.key.toLowerCase()) {
+        case k1.key: {
             cookiezi.unpress_key(k1)
         } break;
-        case k2.code: {
+        case k2.key: {
             cookiezi.unpress_key(k2)
         } break;
     }
+});
+
+CHANGE_KEYS_BUTTON.onclick = (() => {
+    cookiezi.settings.is_changing_keys = 0;
+    CHANGE_KEYS_BUTTON.textContent = `Press your new keys...`
 });
