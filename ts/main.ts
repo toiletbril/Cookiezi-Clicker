@@ -221,9 +221,9 @@ class Cookiezi {
         this.clicks.tapped += 1;
         this.click();
 
-        clearInterval(this.clicks.stopped_interval);
-
         this.clicks.should_decrease = false;
+
+        clearInterval(this.clicks.stopped_interval);
 
         this.clicks.stopped_interval = setTimeout(() => {
             this.clicks.should_decrease = true;
@@ -245,7 +245,8 @@ class Cookiezi {
     update_text(): void {
         AMOUNT_TEXT.textContent = Math.floor(this.amount).toString() + CENT;
         TAP_POWER_TEXT.textContent = "Tap power: " + this.power;
-        CPS_TEXT.textContent = "CP/S: " + (this.cps + this.clicks.tapped / (this.clicks.ticks + 20) * 20).toFixed(1);
+        const speed = (this.cps + this.clicks.tapped / (this.clicks.ticks + 20) * 20);
+        CPS_TEXT.textContent = "CP/S: " + speed.toFixed(1) + " (" +  Math.round(speed * 60 / 4) + " BPM)";
         UPGRADES_COUNT_TEXT.textContent = "Upgrades bought: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
     }
 
