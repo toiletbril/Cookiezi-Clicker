@@ -1,28 +1,29 @@
 "use strict";
-const amount_text = document.getElementById("amount");
-const cps_shop_items = document.getElementById("cps_shop_items");
-const power_shop_items = document.getElementById("power_shop_items");
-const tap_power = document.getElementById("tap_power");
-const cps = document.getElementById("cps");
-const upgrades_c = document.getElementById("upgrades_count");
+const AMOUNT_TEXT = document.getElementById("amount");
+const CPS_SHOP_ITEMS_LIST = document.getElementById("cps_shop_items");
+const GENERAL_SHOP_ITEMS_LIST = document.getElementById("power_shop_items");
+const TAP_POWER_TEXT = document.getElementById("tap_power");
+const CPS_TEXT = document.getElementById("cps");
+const UPGRADES_COUNT_TEXT = document.getElementById("upgrades_count");
+const CENT = "¢";
 const CPS_UPGRADES = [
     {
         id: 0,
         name: "First CP/S upgrade",
         cost: 100,
-        gives: 1,
+        gives: 0.4,
     },
     {
         id: 1,
         name: "Second CP/S upgrade",
         cost: 400,
-        gives: 2,
+        gives: 1,
     },
     {
         id: 2,
         name: "Third CP/S upgrade",
-        cost: 1600,
-        gives: 3,
+        cost: 1700,
+        gives: 4,
     },
 ];
 const GENERAL_UPGRADES = [
@@ -31,17 +32,35 @@ const GENERAL_UPGRADES = [
         name: "First upgrade",
         desc: "+1 tap power",
         cost: 1000,
-        gives: {
-            power: 1
+        action: (self) => {
+            self.power += 1;
         }
     }
 ];
-const UPGRADE_MULTIPLIER = 1.15;
+const UPGRADE_COST_MULTIPLIER = 1.15;
 function create_upgrade_array(arr) {
     let a = new Array;
     arr.forEach(() => a.push(0));
     return a;
 }
+function populate(item, item_description, element_id, click_action) {
+    const item_element = document.createElement("li");
+    const div = document.createElement("div");
+    const p = document.createElement("p");
+    const item_text = document.createTextNode(`${item.name}, ${item.cost}${CENT}`);
+    const buy_button = document.createElement("button");
+    const desc = document.createTextNode(item_description);
+    buy_button.setAttribute("id", element_id);
+    item_element.setAttribute("id", "list_" + element_id);
+    buy_button.onclick = click_action;
+    buy_button.appendChild(item_text);
+    div.appendChild(buy_button);
+    p.appendChild(desc);
+    div.appendChild(p);
+    item_element.appendChild(div);
+    return item_element;
+}
+////////////
 class Cookiezi {
     constructor() {
         this.amount = 0;
@@ -63,35 +82,15 @@ class Cookiezi {
     populate_cps_shop() {
         for (const i in CPS_UPGRADES) {
             const item = CPS_UPGRADES[i];
-            const item_element = document.createElement("li");
-            const div = document.createElement("div");
-            const item_text = document.createTextNode(`${item.name}, ${item.cost}c`);
-            const buy_button = document.createElement("button");
-            const gives = document.createTextNode("+" + item.gives + " CP/S");
-            buy_button.setAttribute("id", "cps_item" + item.id);
-            buy_button.onclick = this.buy_cps(item);
-            buy_button.appendChild(item_text);
-            div.appendChild(buy_button);
-            div.appendChild(gives);
-            item_element.appendChild(div);
-            cps_shop_items.appendChild(item_element);
+            const item_element = populate(item, `+${item.gives} CP/S`, "cps_item" + item.id, this.buy_cps(item));
+            CPS_SHOP_ITEMS_LIST.appendChild(item_element);
         }
     }
     populate_shop() {
         for (const i in GENERAL_UPGRADES) {
             const item = GENERAL_UPGRADES[i];
-            const item_element = document.createElement("li");
-            const div = document.createElement("div");
-            const item_text = document.createTextNode(`${item.name}, ${item.cost}c`);
-            const buy_button = document.createElement("button");
-            const desc = document.createTextNode(item.desc);
-            buy_button.setAttribute("id", "power_item" + item.id);
-            buy_button.onclick = this.buy(item);
-            buy_button.appendChild(item_text);
-            div.appendChild(buy_button);
-            div.appendChild(desc);
-            item_element.appendChild(div);
-            power_shop_items.appendChild(item_element);
+            const item_element = populate(item, item.desc, "item" + item.id, this.buy(item));
+            GENERAL_SHOP_ITEMS_LIST.appendChild(item_element);
         }
     }
     buy_cps(item) {
@@ -104,11 +103,11 @@ class Cookiezi {
             self.amount -= item.cost;
             self.cps_upgrades[item.id] += 1;
             // Increase price
-            CPS_UPGRADES[item.id].cost = Math.floor(CPS_UPGRADES[item.id].cost * UPGRADE_MULTIPLIER);
+            CPS_UPGRADES[item.id].cost = Math.floor(CPS_UPGRADES[item.id].cost * UPGRADE_COST_MULTIPLIER);
             // Update UI
             let button = document.getElementById("cps_item" + item.id);
             button.textContent = `${item.name}, ${item.cost}c`;
-            self.update_item_stats();
+            self.update_cps_stats();
         };
     }
     buy(item) {
@@ -120,10 +119,11 @@ class Cookiezi {
             }
             self.amount -= item.cost;
             self.upgrades[item.id] += 1;
+            item.action(self);
             // This is general upgrade, so no need to change the price. Intead, remove the item from shop.
-            let button = document.getElementById("power_item" + item.id);
-            button.disabled = true;
-            self.update_item_stats();
+            let div = document.getElementById("list_item" + item.id);
+            div.hidden = true;
+            self.update_cps_stats();
         };
     }
     press_key(k) {
@@ -142,21 +142,16 @@ class Cookiezi {
         this.amount += this.cps / 20;
     }
     update_text() {
-        amount_text.textContent = Math.floor(this.amount).toString();
-        tap_power.textContent = "Tap power: " + this.power;
-        cps.textContent = "CP/S: " + this.cps;
-        upgrades_c.textContent = "Upgrades count: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
+        AMOUNT_TEXT.textContent = Math.floor(this.amount).toString();
+        TAP_POWER_TEXT.textContent = "Tap power: " + this.power;
+        CPS_TEXT.textContent = "CP/S: " + this.cps;
+        UPGRADES_COUNT_TEXT.textContent = "Upgrades count: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
     }
-    update_item_stats() {
+    update_cps_stats() {
         let result_cps = 0;
-        let result_power = 0;
         for (const i in this.cps_upgrades) {
             result_cps += CPS_UPGRADES[i].gives * this.cps_upgrades[i];
         }
-        for (const i in this.upgrades) {
-            // todo
-        }
-        this.power = result_power;
         this.cps = result_cps;
     }
     update() {
@@ -164,6 +159,7 @@ class Cookiezi {
         this.update_text();
     }
 }
+////////////
 const cookiezi = new Cookiezi();
 cookiezi.update();
 cookiezi.populate_cps_shop();

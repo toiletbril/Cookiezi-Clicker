@@ -4,7 +4,8 @@
     ],
     "exclude": [],
     "compilerOptions": {
-        "outDir": "./",
+        "module": "system",
+        "outFile": "./main.js",
         "target": "es2020",
         // Strict mode (9)
         "strict": true,
