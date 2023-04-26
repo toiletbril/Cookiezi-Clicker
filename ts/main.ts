@@ -12,19 +12,19 @@ const CENT = "¢";
 const CPS_UPGRADES: ICpsUpgrade[] = [
     {
         id: 0,
-        name: "First CP/S upgrade",
+        name: "Logitech",
         cost: 100,
         gives: 0.4,
     },
     {
         id: 1,
-        name: "Second CP/S upgrade",
+        name: "Left click",
         cost: 400,
         gives: 1,
     },
     {
         id: 2,
-        name: "Third CP/S upgrade",
+        name: "A drill",
         cost: 1700,
         gives: 4,
     },
@@ -33,11 +33,20 @@ const CPS_UPGRADES: ICpsUpgrade[] = [
 const GENERAL_UPGRADES: IGeneralUpgrade[] = [
     {
         id: 0,
-        name: "First upgrade",
-        desc: "+1 tap power",
-        cost: 1000,
+        name: "Buldak",
+        desc: "+0.6 tap power",
+        cost: 500,
         action: (self: Cookiezi) => {
-            self.power += 1;
+            self.power += 0.6;
+        }
+    },
+    {
+        id: 1,
+        name: "Mousepad",
+        desc: "+1.2 tap power",
+        cost: 1100,
+        action: (self: Cookiezi) => {
+            self.power += 1.2;
         }
     }
 ]
