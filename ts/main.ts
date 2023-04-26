@@ -118,6 +118,12 @@ class Cookiezi {
     power: number;
     cps: number;
 
+    clicks = {
+        tapped: 0,
+        tick: 1,
+        tapped_int: 0,
+    }
+
     cps_upgrades: number[];
     upgrades: number[];
 
@@ -149,7 +155,6 @@ class Cookiezi {
     populate_cps_shop(): void {
         for (const i in CPS_UPGRADES) {
             const item = CPS_UPGRADES[i] as ICpsUpgrade;
-
             const item_element = populate(item, `+${item.gives} CP/S`, "cps_item" + item.id, this.buy_cps(item));
 
             CPS_SHOP_ITEMS_LIST.appendChild(item_element);
@@ -159,7 +164,6 @@ class Cookiezi {
     populate_shop(): void {
         for (const i in GENERAL_UPGRADES) {
             const item = GENERAL_UPGRADES[i] as IGeneralUpgrade;
-
             const item_element = populate(item, item.desc, "item" + item.id, this.buy(item));
 
             GENERAL_SHOP_ITEMS_LIST.appendChild(item_element);
@@ -212,7 +216,15 @@ class Cookiezi {
     press_key(k: IKey): void {
         if (k.is_down) return;
         k.is_down = true;
+        this.clicks.tapped += 1;
+
         this.click();
+
+        clearInterval(this.clicks.tapped_int);
+
+        this.clicks.tapped_int = setTimeout(() => {
+            this.clicks.tapped = 0;
+        }, 8000)
     }
 
     unpress_key(k: IKey): void {
@@ -230,8 +242,8 @@ class Cookiezi {
     update_text(): void {
         AMOUNT_TEXT.textContent = Math.floor(this.amount).toString();
         TAP_POWER_TEXT.textContent = "Tap power: " + this.power;
-        CPS_TEXT.textContent = "CP/S: " + this.cps;
-        UPGRADES_COUNT_TEXT.textContent = "Upgrades count: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
+        CPS_TEXT.textContent = "CP/S: " + (this.cps + this.clicks.tapped / this.clicks.tick * 20).toFixed(1);
+        UPGRADES_COUNT_TEXT.textContent = "Upgrades bought: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
     }
 
     update_cps_stats(): void {
@@ -247,6 +259,9 @@ class Cookiezi {
     update() {
         this.invoke_cps();
         this.update_text();
+
+        if (cookiezi.clicks.tapped > 0) cookiezi.clicks.tick += 1;
+        else cookiezi.clicks.tick = 20;
     }
 }
 
@@ -263,7 +278,6 @@ setInterval(() => {
 }, 50)
 
 document.addEventListener("keydown", (k) => {
-
     const k1 = cookiezi.settings.keys[0]!;
     const k2 = cookiezi.settings.keys[1]!;
 
@@ -304,5 +318,5 @@ document.addEventListener("keyup", (k) => {
 
 CHANGE_KEYS_BUTTON.onclick = (() => {
     cookiezi.settings.is_changing_keys = 0;
-    CHANGE_KEYS_BUTTON.textContent = `Press your new keys...`
+    CHANGE_KEYS_BUTTON.textContent = "Press a new key..."
 });

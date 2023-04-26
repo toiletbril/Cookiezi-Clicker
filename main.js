@@ -75,6 +75,11 @@ function populate(item, item_description, element_id, click_action) {
 ////////////
 class Cookiezi {
     constructor() {
+        this.clicks = {
+            tapped: 0,
+            tick: 1,
+            tapped_int: 0,
+        };
         this.amount = 0;
         this.power = 1;
         this.cps = 0;
@@ -145,7 +150,12 @@ class Cookiezi {
         if (k.is_down)
             return;
         k.is_down = true;
+        this.clicks.tapped += 1;
         this.click();
+        clearInterval(this.clicks.tapped_int);
+        this.clicks.tapped_int = setTimeout(() => {
+            this.clicks.tapped = 0;
+        }, 8000);
     }
     unpress_key(k) {
         k.is_down = false;
@@ -159,8 +169,8 @@ class Cookiezi {
     update_text() {
         AMOUNT_TEXT.textContent = Math.floor(this.amount).toString();
         TAP_POWER_TEXT.textContent = "Tap power: " + this.power;
-        CPS_TEXT.textContent = "CP/S: " + this.cps;
-        UPGRADES_COUNT_TEXT.textContent = "Upgrades count: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
+        CPS_TEXT.textContent = "CP/S: " + (this.cps + this.clicks.tapped / this.clicks.tick * 20).toFixed(1);
+        UPGRADES_COUNT_TEXT.textContent = "Upgrades bought: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
     }
     update_cps_stats() {
         let result_cps = 0;
@@ -172,6 +182,10 @@ class Cookiezi {
     update() {
         this.invoke_cps();
         this.update_text();
+        if (cookiezi.clicks.tapped > 0)
+            cookiezi.clicks.tick += 1;
+        else
+            cookiezi.clicks.tick = 20;
     }
 }
 ////////////
@@ -226,5 +240,5 @@ document.addEventListener("keyup", (k) => {
 });
 CHANGE_KEYS_BUTTON.onclick = (() => {
     cookiezi.settings.is_changing_keys = 0;
-    CHANGE_KEYS_BUTTON.textContent = `Press your new keys...`;
+    CHANGE_KEYS_BUTTON.textContent = "Press a new key...";
 });
