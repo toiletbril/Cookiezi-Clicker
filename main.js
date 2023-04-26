@@ -79,6 +79,7 @@ class Cookiezi {
             tapped: 0,
             tick: 1,
             tapped_int: 0,
+            should_decrease: false
         };
         this.amount = 0;
         this.power = 1;
@@ -153,9 +154,10 @@ class Cookiezi {
         this.clicks.tapped += 1;
         this.click();
         clearInterval(this.clicks.tapped_int);
+        this.clicks.should_decrease = false;
         this.clicks.tapped_int = setTimeout(() => {
-            this.clicks.tapped = 0;
-        }, 8000);
+            this.clicks.should_decrease = true;
+        }, 1000);
     }
     unpress_key(k) {
         k.is_down = false;
@@ -169,7 +171,7 @@ class Cookiezi {
     update_text() {
         AMOUNT_TEXT.textContent = Math.floor(this.amount).toString();
         TAP_POWER_TEXT.textContent = "Tap power: " + this.power;
-        CPS_TEXT.textContent = "CP/S: " + (this.cps + this.clicks.tapped / this.clicks.tick * 20).toFixed(1);
+        CPS_TEXT.textContent = "CP/S: " + (this.cps + this.clicks.tapped / (this.clicks.tick + 20) * 20).toFixed(1);
         UPGRADES_COUNT_TEXT.textContent = "Upgrades bought: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
     }
     update_cps_stats() {
@@ -182,10 +184,14 @@ class Cookiezi {
     update() {
         this.invoke_cps();
         this.update_text();
-        if (cookiezi.clicks.tapped > 0)
-            cookiezi.clicks.tick += 1;
+        if (this.clicks.should_decrease && this.clicks.tapped > 0)
+            this.clicks.tapped -= 1;
         else
-            cookiezi.clicks.tick = 20;
+            this.clicks.should_decrease = false;
+        if (this.clicks.tapped > 0)
+            this.clicks.tick += 1;
+        else
+            this.clicks.tick = 0;
     }
 }
 ////////////
