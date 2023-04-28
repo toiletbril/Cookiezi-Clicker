@@ -2,7 +2,8 @@
 /*
  * TODO:
  * - Display only nearest upgrades in the shop, and hide the rest.
- * - Account for inactive tabs. Currently, making the tab inactive will not update your points.
+ * - Account for inactive tabs. Currently, making the tab inactive will not update the points.
+ * - Cascading style sheet =D
  *
  */
 ////////////////////////
@@ -15,7 +16,8 @@ const UPGRADES_COUNT_TEXT_ELEMENT = document.getElementById("upgrades_count");
 const CHANGE_KEYS_BUTTON_ELEMENT = document.getElementById("change_keys");
 const KEYS_TEXT_ELEMENT = document.getElementById("keys");
 const MAIN_DIV_ELEMENT = document.getElementById("main");
-assert("All elements are not null", !!AMOUNT_TEXT_ELEMENT &&
+assert("All elements are not null", // dude dynamic languages
+!!AMOUNT_TEXT_ELEMENT &&
     !!CPS_SHOP_ITEMS_LIST_ELEMENT &&
     !!GENERAL_SHOP_ITEMS_LIST_ELEMENT &&
     !!TAP_POWER_TEXT_ELEMENT &&
@@ -24,6 +26,7 @@ assert("All elements are not null", !!AMOUNT_TEXT_ELEMENT &&
     !!CHANGE_KEYS_BUTTON_ELEMENT &&
     !!KEYS_TEXT_ELEMENT &&
     !!MAIN_DIV_ELEMENT);
+const TPS = 40;
 const KEY_COUNT = 2;
 const CHANGE_KEYS_TEXT = "Change keys...";
 const CHANGING_KEYS_TEXT = "Press new a new key...";
@@ -71,9 +74,9 @@ const GENERAL_UPGRADES = [
     }
 ];
 ////////////////////////
-function assert(description, cond) {
+function assert(desc, cond) {
     if (!cond)
-        throw new Error("Assertion failed: " + description);
+        throw new Error("Assertion failed: " + desc);
 }
 function create_upgrade_array(array) {
     return new Array(array.length).fill(0);
@@ -191,11 +194,11 @@ class Cookiezi {
         this.amount += this.power;
     }
     invoke_cps() {
-        this.amount += this.cps / 20;
+        this.amount += this.cps / TPS;
     }
     update_elements() {
         // NOTE: this calculates to a value slightly higher than actual speed
-        const speed = (this.cps + this.clicks.tapped / (this.clicks.ticks + 40) * 20);
+        const speed = (this.cps + this.clicks.tapped / (this.clicks.ticks + TPS * 2) * TPS);
         AMOUNT_TEXT_ELEMENT.textContent = Math.floor(this.amount).toString() + CENT;
         TAP_POWER_TEXT_ELEMENT.textContent = "Tap power: " + this.power;
         CPS_TEXT_ELEMENT.textContent = "CP/S: " + speed.toFixed(1) + " (" + Math.round(speed * 60 / 4) + " BPM)";
@@ -213,7 +216,7 @@ class Cookiezi {
             this.clicks.ticks += 1;
         }
         else if (this.clicks.ticks != 1) {
-            this.clicks.tapped = Math.floor(this.clicks.tapped / (this.clicks.ticks + 20) * 20);
+            this.clicks.tapped = Math.floor(this.clicks.tapped / (this.clicks.ticks + TPS * 2) * TPS);
             this.clicks.ticks = 1;
         }
         else if (this.clicks.tapped > 0) {
@@ -234,7 +237,7 @@ cookiezi.populate_shop();
 assert("settings.keys is of KEY_COUNT size", cookiezi.settings.keys.length == KEY_COUNT);
 setInterval(() => {
     cookiezi.update();
-}, 50);
+}, 1000 / TPS);
 document.addEventListener("keydown", (k) => {
     const k1 = cookiezi.settings.keys[0];
     const k2 = cookiezi.settings.keys[1];
