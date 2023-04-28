@@ -1,7 +1,7 @@
 "use strict";
 const AMOUNT_TEXT_ELEMENT = document.getElementById("amount");
 const CPS_SHOP_ITEMS_LIST_ELEMENT = document.getElementById("cps_shop_items");
-const GENERAL_SHOP_ITEMS_LIST_ELEMENT = document.getElementById("power_shop_items");
+const GENERAL_SHOP_ITEMS_LIST_ELEMENT = document.getElementById("shop_items");
 const TAP_POWER_TEXT_ELEMENT = document.getElementById("tap_power");
 const CPS_TEXT_ELEMENT = document.getElementById("cps");
 const UPGRADES_COUNT_TEXT_ELEMENT = document.getElementById("upgrades_count");
@@ -18,37 +18,37 @@ assert("All elements are not null", !!AMOUNT_TEXT_ELEMENT &&
     !!KEYS_TEXT_ELEMENT &&
     !!MAIN_DIV_ELEMENT);
 const KEY_COUNT = 2;
-const UPGRADE_COST_MULTIPLIER = 1.15;
 const CHANGE_KEYS_TEXT = "Change keys...";
 const CHANGING_KEYS_TEXT = "Press new a new key...";
-const CURRENT_KEYS_TEXT = (k1, k2) => `Tap ${k1.toUpperCase()}/${k2.toUpperCase()} to gain points.`;
+const CURRENT_KEYS_TEXT = (k1, k2, n) => `Tap ${k1.toUpperCase()}/${n == 1 ? k2.toUpperCase() : "?"} to gain points.`;
 const CENT = "¢";
 const CPS_UPGRADES = [
     {
         id: 0,
         name: "Logitech",
-        cost: 100,
+        cost: 80,
         gives: 0.4,
     },
     {
         id: 1,
         name: "Left click",
-        cost: 400,
+        cost: 240,
         gives: 1,
     },
     {
         id: 2,
         name: "A drill",
-        cost: 1700,
+        cost: 860,
         gives: 4,
     },
 ];
+const CPS_COST_MULTIPLIER = 1.15;
 const GENERAL_UPGRADES = [
     {
         id: 0,
         name: "Buldak",
         desc: "+0.6 tap power",
-        cost: 500,
+        cost: 520,
         action: (self) => {
             self.power += 0.6;
         }
@@ -141,7 +141,7 @@ class Cookiezi {
             self.amount -= item.cost;
             self.cps_upgrades[item.id] += 1;
             // Increase price
-            CPS_UPGRADES[item.id].cost = Math.floor(CPS_UPGRADES[item.id].cost * UPGRADE_COST_MULTIPLIER);
+            CPS_UPGRADES[item.id].cost = Math.floor(CPS_UPGRADES[item.id].cost * CPS_COST_MULTIPLIER);
             // Update UI
             let button = document.getElementById("cps_item" + item.id);
             button.textContent = `${item.name}, ${item.cost}c`;
@@ -232,8 +232,8 @@ document.addEventListener("keydown", (k) => {
     const k1 = cookiezi.settings.keys[0];
     const k2 = cookiezi.settings.keys[1];
     if (cookiezi.settings.is_changing_keys >= 0) {
-        KEYS_TEXT_ELEMENT.textContent = CURRENT_KEYS_TEXT(k1.key, k2.key);
         cookiezi.settings.keys[cookiezi.settings.is_changing_keys].key = k.key;
+        KEYS_TEXT_ELEMENT.textContent = CURRENT_KEYS_TEXT(k1.key, k2.key, cookiezi.settings.is_changing_keys);
         cookiezi.settings.is_changing_keys += 1;
         if (cookiezi.settings.is_changing_keys >= KEY_COUNT) {
             cookiezi.settings.is_changing_keys = -1;
