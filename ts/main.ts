@@ -1,3 +1,12 @@
+/*
+ * TODO:
+ * - Display only nearest upgrades in the shop, and hide the rest.
+ * - Account for inactive tabs. Currently, making the tab inactive will not update your points.
+ *
+ */
+
+////////////////////////
+
 const AMOUNT_TEXT_ELEMENT = document.getElementById("amount") as HTMLElement;
 const CPS_SHOP_ITEMS_LIST_ELEMENT = document.getElementById("cps_shop_items") as HTMLUListElement;
 const GENERAL_SHOP_ITEMS_LIST_ELEMENT = document.getElementById("shop_items") as HTMLUListElement;
@@ -72,7 +81,7 @@ const GENERAL_UPGRADES: IGeneralUpgrade[] = [
     }
 ]
 
-////////////
+////////////////////////
 
 function assert(description: string, cond: boolean) {
     if (!cond) throw new Error("Assertion failed: " + description);
@@ -105,7 +114,7 @@ function make_shop_item(item: ICpsUpgrade | IGeneralUpgrade, item_description: s
     return item_element;
 }
 
-////////////
+////////////////////////
 
 interface ICpsUpgrade {
     id: number,
@@ -132,7 +141,7 @@ interface ISettings {
     is_changing_keys: number
 }
 
-////////////
+////////////////////////
 
 class Cookiezi {
     amount: number;
@@ -300,7 +309,7 @@ class Cookiezi {
     }
 }
 
-////////////
+////////////////////////
 
 const cookiezi = new Cookiezi();
 

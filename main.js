@@ -1,4 +1,11 @@
 "use strict";
+/*
+ * TODO:
+ * - Display only nearest upgrades in the shop, and hide the rest.
+ * - Account for inactive tabs. Currently, making the tab inactive will not update your points.
+ *
+ */
+////////////////////////
 const AMOUNT_TEXT_ELEMENT = document.getElementById("amount");
 const CPS_SHOP_ITEMS_LIST_ELEMENT = document.getElementById("cps_shop_items");
 const GENERAL_SHOP_ITEMS_LIST_ELEMENT = document.getElementById("shop_items");
@@ -63,7 +70,7 @@ const GENERAL_UPGRADES = [
         }
     }
 ];
-////////////
+////////////////////////
 function assert(description, cond) {
     if (!cond)
         throw new Error("Assertion failed: " + description);
@@ -88,7 +95,7 @@ function make_shop_item(item, item_description, element_id, click_action) {
     item_element.appendChild(div);
     return item_element;
 }
-////////////
+////////////////////////
 class Cookiezi {
     constructor() {
         this.clicks = {
@@ -219,7 +226,7 @@ class Cookiezi {
         this.update_elements();
     }
 }
-////////////
+////////////////////////
 const cookiezi = new Cookiezi();
 cookiezi.update();
 cookiezi.populate_cps_shop();
