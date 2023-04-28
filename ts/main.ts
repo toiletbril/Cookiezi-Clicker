@@ -1,12 +1,31 @@
-const AMOUNT_TEXT = document.getElementById("amount") as HTMLElement;
-const CPS_SHOP_ITEMS_LIST = document.getElementById("cps_shop_items") as HTMLUListElement;
-const GENERAL_SHOP_ITEMS_LIST = document.getElementById("power_shop_items") as HTMLUListElement;
-const TAP_POWER_TEXT = document.getElementById("tap_power") as HTMLElement;
-const CPS_TEXT = document.getElementById("cps") as HTMLElement;
-const UPGRADES_COUNT_TEXT = document.getElementById("upgrades_count") as HTMLElement;
-const CHANGE_KEYS_BUTTON = document.getElementById("change_keys") as HTMLButtonElement;
-const KEYS_TEXT = document.getElementById("keys") as HTMLButtonElement;
-const MAIN_DIV = document.getElementById("main") as HTMLDivElement;
+const AMOUNT_TEXT_ELEMENT = document.getElementById("amount") as HTMLElement;
+const CPS_SHOP_ITEMS_LIST_ELEMENT = document.getElementById("cps_shop_items") as HTMLUListElement;
+const GENERAL_SHOP_ITEMS_LIST_ELEMENT = document.getElementById("power_shop_items") as HTMLUListElement;
+const TAP_POWER_TEXT_ELEMENT = document.getElementById("tap_power") as HTMLElement;
+const CPS_TEXT_ELEMENT = document.getElementById("cps") as HTMLElement;
+const UPGRADES_COUNT_TEXT_ELEMENT = document.getElementById("upgrades_count") as HTMLElement;
+const CHANGE_KEYS_BUTTON_ELEMENT = document.getElementById("change_keys") as HTMLButtonElement;
+const KEYS_TEXT_ELEMENT = document.getElementById("keys") as HTMLButtonElement;
+const MAIN_DIV_ELEMENT = document.getElementById("main") as HTMLDivElement;
+
+assert("All elements are not null",
+    !!AMOUNT_TEXT_ELEMENT &&
+    !!CPS_SHOP_ITEMS_LIST_ELEMENT &&
+    !!GENERAL_SHOP_ITEMS_LIST_ELEMENT &&
+    !!TAP_POWER_TEXT_ELEMENT &&
+    !!CPS_SHOP_ITEMS_LIST_ELEMENT &&
+    !!UPGRADES_COUNT_TEXT_ELEMENT &&
+    !!CHANGE_KEYS_BUTTON_ELEMENT &&
+    !!KEYS_TEXT_ELEMENT &&
+    !!MAIN_DIV_ELEMENT
+);
+
+const KEY_COUNT = 2;
+const UPGRADE_COST_MULTIPLIER = 1.15;
+
+const CHANGE_KEYS_TEXT = "Change keys..."
+const CHANGING_KEYS_TEXT = "Press new a new key..."
+const CURRENT_KEYS_TEXT = (k1: string, k2: string) => `Tap ${k1.toUpperCase()}/${k2.toUpperCase()} to gain points.`
 
 const CENT = "¢";
 
@@ -52,17 +71,19 @@ const GENERAL_UPGRADES: IGeneralUpgrade[] = [
     }
 ]
 
-const UPGRADE_COST_MULTIPLIER = 1.15;
-
 ////////////
 
-function create_upgrade_array<T>(arr: Array<T>) {
-    let a = new Array<number>;
-    arr.forEach(() => a.push(0));
-    return a;
+function assert(description: string, cond: boolean) {
+    if (!cond) throw new Error("Assertion failed: " + description);
 }
 
-function populate(item: ICpsUpgrade | IGeneralUpgrade, item_description: string, element_id: string, click_action: () => void) {
+function create_upgrade_array<T>(array: Array<T>) {
+    return new Array<number>(array.length).fill(0);
+}
+
+function make_shop_item(item: ICpsUpgrade | IGeneralUpgrade,
+    item_description: string,
+    element_id: string, click_action: () => void) {
     const item_element = document.createElement("li");
     const div = document.createElement("div");
     const p = document.createElement("p")
@@ -79,7 +100,6 @@ function populate(item: ICpsUpgrade | IGeneralUpgrade, item_description: string,
     div.appendChild(buy_button);
     p.appendChild(desc);
     div.appendChild(p);
-
     item_element.appendChild(div);
 
     return item_element;
@@ -148,7 +168,7 @@ class Cookiezi {
     }
 
     clicks = {
-        should_decrease: false,
+        is_tapping: false,
         stopped_interval: 0,
         tapped: 0,
         ticks: 1
@@ -156,22 +176,21 @@ class Cookiezi {
 
     populate_cps_shop(): void {
         for (const i in CPS_UPGRADES) {
-            const item = CPS_UPGRADES[i] as ICpsUpgrade;
-            const item_element = populate(item, `+${item.gives} CP/S`, "cps_item" + item.id, this.buy_cps(item));
-
-            CPS_SHOP_ITEMS_LIST.appendChild(item_element);
+            const item = CPS_UPGRADES[i]!;
+            const item_element = make_shop_item(item, `+${item.gives} CP/S`, "cps_item" + item.id, this.buy_cps(item));
+            CPS_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
         }
     }
 
     populate_shop(): void {
         for (const i in GENERAL_UPGRADES) {
-            const item = GENERAL_UPGRADES[i] as IGeneralUpgrade;
-            const item_element = populate(item, item.desc, "item" + item.id, this.buy(item));
-
-            GENERAL_SHOP_ITEMS_LIST.appendChild(item_element);
+            const item = GENERAL_UPGRADES[i]!;
+            const item_element = make_shop_item(item, item.desc, "item" + item.id, this.buy(item));
+            GENERAL_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
         }
     }
 
+    // Buy methods return an action that you can put on a button.
     buy_cps(item: ICpsUpgrade): () => void {
         const self = this;
         return function () {
@@ -190,7 +209,7 @@ class Cookiezi {
             let button = document.getElementById("cps_item" + item.id) as HTMLButtonElement;
             button.textContent = `${item.name}, ${item.cost}c`;
 
-            self.update_cps_stats();
+            self.update_passive_cps();
         }
     }
 
@@ -211,10 +230,11 @@ class Cookiezi {
             let div = document.getElementById("list_item" + item.id) as HTMLDivElement;
             div.hidden = true;
 
-            self.update_cps_stats();
+            self.update_passive_cps();
         }
     }
 
+    // This is to avoid clicking when holding button down.
     press_key(k: IKey): void {
         if (k.is_down) return;
 
@@ -222,12 +242,12 @@ class Cookiezi {
         this.clicks.tapped += 1;
         this.click();
 
-        this.clicks.should_decrease = false;
+        this.clicks.is_tapping = true;
 
         clearInterval(this.clicks.stopped_interval);
 
         this.clicks.stopped_interval = setTimeout(() => {
-            this.clicks.should_decrease = true;
+            this.clicks.is_tapping = false;
         }, 1000)
     }
 
@@ -243,15 +263,16 @@ class Cookiezi {
         this.amount += this.cps / 20;
     }
 
-    update_text(): void {
-        AMOUNT_TEXT.textContent = Math.floor(this.amount).toString() + CENT;
-        TAP_POWER_TEXT.textContent = "Tap power: " + this.power;
-        const speed = (this.cps + this.clicks.tapped / (this.clicks.ticks + 20) * 20);
-        CPS_TEXT.textContent = "CP/S: " + speed.toFixed(1) + " (" + Math.round(speed * 60 / 4) + " BPM)";
-        UPGRADES_COUNT_TEXT.textContent = "Upgrades bought: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
+    update_elements(): void {
+        // NOTE: this calculates to a value slightly higher than actual speed
+        const speed = (this.cps + this.clicks.tapped / (this.clicks.ticks + 40) * 20);
+        AMOUNT_TEXT_ELEMENT.textContent = Math.floor(this.amount).toString() + CENT;
+        TAP_POWER_TEXT_ELEMENT.textContent = "Tap power: " + this.power;
+        CPS_TEXT_ELEMENT.textContent = "CP/S: " + speed.toFixed(1) + " (" + Math.round(speed * 60 / 4) + " BPM)";
+        UPGRADES_COUNT_TEXT_ELEMENT.textContent = "Upgrades bought: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
     }
 
-    update_cps_stats(): void {
+    update_passive_cps(): void {
         let result_cps = 0;
 
         for (const i in this.cps_upgrades) {
@@ -261,17 +282,22 @@ class Cookiezi {
         this.cps = result_cps;
     }
 
-    update() {
-        this.invoke_cps();
-        this.update_text();
-
-        if (this.clicks.should_decrease && this.clicks.tapped > 0) this.clicks.tapped -= 1;
-        else {
-            this.clicks.should_decrease = false;
+    update_cps(): void {
+        if (this.clicks.is_tapping) {
             this.clicks.ticks += 1;
+        } else if (this.clicks.ticks != 1) {
+            this.clicks.tapped = Math.floor(this.clicks.tapped / (this.clicks.ticks + 20) * 20);
+            this.clicks.ticks = 1;
+        } else if (this.clicks.tapped > 0) {
+            this.clicks.tapped -= 1;
         }
-        if (this.clicks.tapped <= 0)
-            this.clicks.ticks = 0;
+    }
+
+    update(): void {
+        this.invoke_cps();
+        this.update_cps();
+
+        this.update_elements();
     }
 }
 
@@ -283,6 +309,8 @@ cookiezi.update()
 cookiezi.populate_cps_shop();
 cookiezi.populate_shop();
 
+assert("settings.keys is of KEY_COUNT size", cookiezi.settings.keys.length == KEY_COUNT)
+
 setInterval(() => {
     cookiezi.update();
 }, 50)
@@ -292,12 +320,13 @@ document.addEventListener("keydown", (k) => {
     const k2 = cookiezi.settings.keys[1]!;
 
     if (cookiezi.settings.is_changing_keys >= 0) {
+        KEYS_TEXT_ELEMENT.textContent = CURRENT_KEYS_TEXT(k1.key, k2.key);
         cookiezi.settings.keys[cookiezi.settings.is_changing_keys]!.key = k.key;
-        ++cookiezi.settings.is_changing_keys;
-        KEYS_TEXT.textContent = `Tap ${k1.key.toUpperCase()}/${k2.key.toUpperCase()} to gain points.`;
-        if (cookiezi.settings.is_changing_keys > 1) {
+        cookiezi.settings.is_changing_keys += 1;
+
+        if (cookiezi.settings.is_changing_keys >= KEY_COUNT) {
             cookiezi.settings.is_changing_keys = -1;
-            CHANGE_KEYS_BUTTON.textContent = "Change keys...";
+            CHANGE_KEYS_BUTTON_ELEMENT.textContent = CHANGE_KEYS_TEXT;
         }
         return;
     }
@@ -326,7 +355,7 @@ document.addEventListener("keyup", (k) => {
     }
 });
 
-CHANGE_KEYS_BUTTON.onclick = (() => {
+CHANGE_KEYS_BUTTON_ELEMENT.onclick = (() => {
     cookiezi.settings.is_changing_keys = 0;
-    CHANGE_KEYS_BUTTON.textContent = "Press a new key..."
+    CHANGE_KEYS_BUTTON_ELEMENT.textContent = CHANGING_KEYS_TEXT;
 });
