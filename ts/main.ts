@@ -83,16 +83,16 @@ const GENERAL_UPGRADES: IGeneralUpgrade[] = [
 
 ////////////////////////
 
-function assert(description: string, cond: boolean) {
+function assert(description: string, cond: boolean): void {
     if (!cond) throw new Error("Assertion failed: " + description);
 }
 
-function create_upgrade_array<T>(array: Array<T>) {
+function create_upgrade_array<T>(array: Array<T>): Array<number> {
     return new Array<number>(array.length).fill(0);
 }
 
 function make_shop_item(item: ICpsUpgrade | IGeneralUpgrade, item_description: string,
-                        element_id: string, click_action: () => void) {
+                        element_id: string, click_action: () => void): HTMLLIElement {
     const item_element = document.createElement("li");
     const div = document.createElement("div");
     const p = document.createElement("p")
@@ -313,11 +313,11 @@ class Cookiezi {
 
 const cookiezi = new Cookiezi();
 
-cookiezi.update()
+cookiezi.update();
 cookiezi.populate_cps_shop();
 cookiezi.populate_shop();
 
-assert("settings.keys is of KEY_COUNT size", cookiezi.settings.keys.length == KEY_COUNT)
+assert("settings.keys is of KEY_COUNT size", cookiezi.settings.keys.length == KEY_COUNT);
 
 setInterval(() => {
     cookiezi.update();
@@ -341,10 +341,10 @@ document.addEventListener("keydown", (k) => {
 
     switch (k.key.toLowerCase()) {
         case k1.key: {
-            cookiezi.press_key(k1)
+            cookiezi.press_key(k1);
         } break;
         case k2.key: {
-            cookiezi.press_key(k2)
+            cookiezi.press_key(k2);
         } break;
     }
 });
@@ -355,10 +355,10 @@ document.addEventListener("keyup", (k) => {
 
     switch (k.key.toLowerCase()) {
         case k1.key: {
-            cookiezi.unpress_key(k1)
+            cookiezi.unpress_key(k1);
         } break;
         case k2.key: {
-            cookiezi.unpress_key(k2)
+            cookiezi.unpress_key(k2);
         } break;
     }
 });
