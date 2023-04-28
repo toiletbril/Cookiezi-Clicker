@@ -2,6 +2,7 @@
  * TODO:
  * - Display only nearest upgrades in the shop, and hide the rest.
  * - Account for inactive tabs. Currently, making the tab inactive will not update your points.
+ * - Cascading style sheet
  *
  */
 
