@@ -116,7 +116,7 @@ const GENERAL_UPGRADES = [
         }
     },
     {
-        id: 4,
+        id: 5,
         name: "Sugar",
         desc: "Vaxei goes godmode",
         cost: 18900,
@@ -126,7 +126,7 @@ const GENERAL_UPGRADES = [
         }
     },
     {
-        id: 4,
+        id: 6,
         name: "Cookiezi",
         desc: "Cookiezi",
         cost: 69420,
@@ -151,6 +151,7 @@ function make_shop_item(item, item_description, element_id, click_action) {
     const item_text = document.createTextNode(`${item.name}, ${item.cost}${CENT}`);
     const buy_button = document.createElement("button");
     const desc = document.createTextNode(item_description);
+    p.setAttribute("id", "p" + element_id);
     buy_button.setAttribute("id", element_id);
     item_element.setAttribute("id", "list_" + element_id);
     buy_button.onclick = click_action;
@@ -270,7 +271,10 @@ class Cookiezi {
     update_passive_cps() {
         let result_cps = 0;
         for (const i in this.cps_upgrades) {
-            result_cps += CPS_UPGRADES[i].gives * this.cps_upgrades[i];
+            const item = CPS_UPGRADES[i];
+            result_cps += item.gives * this.cps_upgrades[i];
+            const button = document.getElementById("pcps_item" + i);
+            button.textContent = `+${item.gives} CP/S`;
         }
         this.cps = result_cps;
     }

@@ -127,7 +127,7 @@ const GENERAL_UPGRADES: IGeneralUpgrade[] = [
         }
     },
     {
-        id: 4,
+        id: 5,
         name: "Sugar",
         desc: "Vaxei goes godmode",
         cost: 18900,
@@ -137,7 +137,7 @@ const GENERAL_UPGRADES: IGeneralUpgrade[] = [
         }
     },
     {
-        id: 4,
+        id: 6,
         name: "Cookiezi",
         desc: "Cookiezi",
         cost: 69420,
@@ -162,11 +162,12 @@ function make_shop_item(item: ICpsUpgrade | IGeneralUpgrade, item_description: s
                         element_id: string, click_action: () => void): HTMLLIElement {
     const item_element = document.createElement("li");
     const div = document.createElement("div");
-    const p = document.createElement("p")
+    const p = document.createElement("p");
     const item_text = document.createTextNode(`${item.name}, ${item.cost}${CENT}`);
     const buy_button = document.createElement("button");
     const desc = document.createTextNode(item_description)
 
+    p.setAttribute("id", "p" + element_id);
     buy_button.setAttribute("id", element_id);
     item_element.setAttribute("id", "list_" + element_id);
 
@@ -354,7 +355,10 @@ class Cookiezi {
         let result_cps = 0;
 
         for (const i in this.cps_upgrades) {
-            result_cps += CPS_UPGRADES[i]!.gives * this.cps_upgrades[i]!;
+            const item = CPS_UPGRADES[i]!
+            result_cps += item.gives * this.cps_upgrades[i]!;
+            const button = document.getElementById("pcps_item" + i) as HTMLButtonElement;
+            button.textContent = `+${item.gives} CP/S`;
         }
 
         this.cps = result_cps;
