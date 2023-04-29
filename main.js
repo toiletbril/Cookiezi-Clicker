@@ -31,7 +31,7 @@ const TPS_ADJ = Math.floor(TPS - TPS / 9);
 const KEY_COUNT = 2;
 const CHANGE_KEYS_TEXT = "Change keys...";
 const CHANGING_KEYS_TEXT = "Press new a new key...";
-const CURRENT_KEYS_TEXT = (k1, k2, n) => `Tap ${k1.toUpperCase()}/${n == 1 ? k2.toUpperCase() : "?"} to gain points.`;
+const CURRENT_KEYS_TEXT = (k1, k2, n) => `Tap ${n <= 0 ? k1.toUpperCase() : "?"}/${n <= 1 ? k2.toUpperCase() : "?"} to gain points.`;
 const CENT = "¢";
 const CPS_UPGRADES = [
     {
@@ -52,6 +52,18 @@ const CPS_UPGRADES = [
         cost: 860,
         gives: 4,
     },
+    {
+        id: 3,
+        name: "Vaxei",
+        cost: 6420,
+        gives: 10,
+    },
+    {
+        id: 4,
+        name: "Cookiezi",
+        cost: 24500,
+        gives: 50,
+    },
 ];
 const CPS_COST_MULTIPLIER = 1.15;
 const GENERAL_UPGRADES = [
@@ -66,11 +78,61 @@ const GENERAL_UPGRADES = [
     },
     {
         id: 1,
+        name: "Better wire",
+        desc: "Logitech is twice more effective",
+        cost: 840,
+        action: (self) => {
+            CPS_UPGRADES[0].gives *= 2;
+            self.update_passive_cps;
+        }
+    },
+    {
+        id: 2,
         name: "Mousepad",
         desc: "+1.2 tap power",
-        cost: 1100,
+        cost: 1300,
         action: (self) => {
             self.power += 1.2;
+        }
+    },
+    {
+        id: 3,
+        name: "Wacom",
+        desc: "+3.2 tap power",
+        cost: 4600,
+        action: (self) => {
+            self.power += 2.8;
+        }
+    },
+    {
+        id: 4,
+        name: "Power outlet",
+        desc: "Left click and drill become better",
+        cost: 10640,
+        action: (self) => {
+            CPS_UPGRADES[1].gives *= 3;
+            CPS_UPGRADES[2].gives *= 2;
+            self.update_passive_cps;
+        }
+    },
+    {
+        id: 4,
+        name: "Sugar",
+        desc: "Vaxei goes godmode",
+        cost: 18900,
+        action: (self) => {
+            CPS_UPGRADES[3].gives *= 2;
+            self.update_passive_cps;
+        }
+    },
+    {
+        id: 4,
+        name: "Cookiezi",
+        desc: "Cookiezi",
+        cost: 69420,
+        action: (self) => {
+            CPS_UPGRADES[4].gives *= 2;
+            self.update_passive_cps;
         }
     }
 ];
