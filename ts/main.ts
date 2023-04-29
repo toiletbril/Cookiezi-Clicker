@@ -183,7 +183,7 @@ class Cookiezi {
         is_tapping: false,
         stopped_interval: 0,
         tapped: 0,
-        ticks: 1
+        ticks: TPS
     }
 
     populate_cps_shop(): void {
@@ -276,8 +276,10 @@ class Cookiezi {
     }
 
     update_elements(): void {
-        // NOTE: this calculates to a value slightly higher than actual speed
-        const speed = (this.cps + this.clicks.tapped / (this.clicks.ticks + TPS * 2) * TPS);
+        // NOTE: Adjusting TPS here to account for setTimeout's delays shrug
+        const tps_adj = Math.floor(TPS - TPS / 5);
+        const speed = this.cps + (this.clicks.tapped * tps_adj / this.clicks.ticks);
+
         AMOUNT_TEXT_ELEMENT.textContent = Math.floor(this.amount).toString() + CENT;
         TAP_POWER_TEXT_ELEMENT.textContent = "Tap power: " + this.power;
         CPS_TEXT_ELEMENT.textContent = "CP/S: " + speed.toFixed(1) + " (" + Math.round(speed * 60 / 4) + " BPM)";
@@ -297,9 +299,12 @@ class Cookiezi {
     update_cps(): void {
         if (this.clicks.is_tapping) {
             this.clicks.ticks += 1;
-        } else if (this.clicks.ticks != 1) {
-            this.clicks.tapped = Math.floor(this.clicks.tapped / (this.clicks.ticks + TPS * 2) * TPS);
-            this.clicks.ticks = 1;
+        } else if (this.clicks.ticks != TPS) {
+            // NOTE:
+            // TPS should be the beginning value instead of 0, because cp/s is being calculated as:
+            // TOTAL_TAPPED * TPS / TICKS -> TOTAL_TAPPED / SECONDS_PASSED
+            this.clicks.tapped = Math.floor(this.clicks.tapped / this.clicks.ticks * TPS);
+            this.clicks.ticks = TPS;
         } else if (this.clicks.tapped > 0) {
             this.clicks.tapped -= 1;
         }
@@ -308,6 +313,7 @@ class Cookiezi {
     update(): void {
         this.invoke_cps();
         this.update_cps();
+        console.log(`tapped: ${this.clicks.tapped}\nticks: ${this.clicks.ticks}\ncps = ${this.clicks.tapped / (this.clicks.ticks / TPS)}`);
         this.update_elements();
     }
 }
