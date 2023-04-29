@@ -2,7 +2,6 @@
  * TODO:
  * - Display only nearest upgrades in the shop, and hide the rest.
  * - Cascading style sheet =D
- *
  */
 
 ////////////////////////
@@ -38,7 +37,7 @@ const KEY_COUNT = 2;
 const CHANGE_KEYS_TEXT = "Change keys..."
 const CHANGING_KEYS_TEXT = "Press new a new key..."
 const CURRENT_KEYS_TEXT = (k1: string, k2: string, n: number) =>
-    `Tap ${n <= 0 ? k1.toUpperCase() : "?"}/${n <= 1 ? k2.toUpperCase() : "?"} to gain points.`
+    `Tap ${n <= 0 ? "?" : k1.toUpperCase() }/${n <= 1 ? "?" : k2.toUpperCase()} to gain points.`
 
 const CENT = "¢";
 
@@ -297,7 +296,7 @@ class Cookiezi {
         return function () {
             if (self.amount < item.cost) {
                 alert("Not enough amount to buy \"" + item.name + "\" :(");
-                return;
+                    return;
             }
 
             self.amount -= item.cost;
@@ -405,8 +404,9 @@ document.addEventListener("keydown", (k) => {
 
     if (cookiezi.settings.is_changing_keys >= 0) {
         cookiezi.settings.keys[cookiezi.settings.is_changing_keys]!.key = k.key;
-        KEYS_TEXT_ELEMENT.textContent = CURRENT_KEYS_TEXT(k1.key, k2.key, cookiezi.settings.is_changing_keys);
+
         cookiezi.settings.is_changing_keys += 1;
+        KEYS_TEXT_ELEMENT.textContent = CURRENT_KEYS_TEXT(k1.key, k2.key, cookiezi.settings.is_changing_keys);
 
         if (cookiezi.settings.is_changing_keys >= KEY_COUNT) {
             cookiezi.settings.is_changing_keys = -1;
@@ -440,7 +440,11 @@ document.addEventListener("keyup", (k) => {
 });
 
 CHANGE_KEYS_BUTTON_ELEMENT.onclick = (() => {
+    const k1 = cookiezi.settings.keys[0]!;
+    const k2 = cookiezi.settings.keys[1]!;
+
     cookiezi.settings.is_changing_keys = 0;
+    KEYS_TEXT_ELEMENT.textContent = CURRENT_KEYS_TEXT(k1.key, k2.key, cookiezi.settings.is_changing_keys);
     CHANGE_KEYS_BUTTON_ELEMENT.textContent = CHANGING_KEYS_TEXT;
 });
 
