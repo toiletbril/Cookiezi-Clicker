@@ -234,8 +234,8 @@ class Cookiezi {
             self.upgrades[item.id] += 1;
             item.action(self);
             // This is general upgrade, so no need to change the price. Intead, remove the item from shop.
-            let div = document.getElementById("list_item" + item.id);
-            div.hidden = true;
+            let button = document.getElementById("item" + item.id);
+            button.disabled = true;
             self.update_passive_cps();
         };
     }
