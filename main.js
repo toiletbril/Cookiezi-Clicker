@@ -1,8 +1,9 @@
 "use strict";
 /*
  * TODO:
+ * - Display how much you've bought of each upgrade somewhere near the buy button.
  * - Display only nearest upgrades in the shop, and hide the rest.
- * - Cascading style sheet =D
+ * - Cascading style sheet
  */
 ////////////////////////
 const AMOUNT_TEXT_ELEMENT = document.getElementById("amount");
@@ -126,6 +127,15 @@ const GENERAL_UPGRADES = [
     },
     {
         id: 6,
+        name: "Tablet cover",
+        desc: "Click power is doubled",
+        cost: 31200,
+        action: (self) => {
+            self.power *= 2;
+        }
+    },
+    {
+        id: 7,
         name: "Cookiezi",
         desc: "Cookiezi",
         cost: 69420,

@@ -1,7 +1,8 @@
 /*
  * TODO:
+ * - Display how much you've bought of each upgrade somewhere near the buy button.
  * - Display only nearest upgrades in the shop, and hide the rest.
- * - Cascading style sheet =D
+ * - Cascading style sheet
  */
 
 ////////////////////////
@@ -137,6 +138,15 @@ const GENERAL_UPGRADES: IGeneralUpgrade[] = [
     },
     {
         id: 6,
+        name: "Tablet cover",
+        desc: "Click power is doubled",
+        cost: 31200,
+        action: (self: Cookiezi) => {
+            self.power *= 2;
+        }
+    },
+    {
+        id: 7,
         name: "Cookiezi",
         desc: "Cookiezi",
         cost: 69420,
@@ -296,7 +306,7 @@ class Cookiezi {
         return function () {
             if (self.amount < item.cost) {
                 alert("Not enough amount to buy \"" + item.name + "\" :(");
-                    return;
+                return;
             }
 
             self.amount -= item.cost;
