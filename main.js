@@ -26,6 +26,8 @@ assert("All elements are not null", // dude dynamic languages
     !!KEYS_TEXT_ELEMENT &&
     !!MAIN_DIV_ELEMENT);
 const TPS = 40;
+// NOTE: This is here to account for setTimeout's delays ;(
+const TPS_ADJ = Math.floor(TPS - TPS / 9);
 const KEY_COUNT = 2;
 const CHANGE_KEYS_TEXT = "Change keys...";
 const CHANGING_KEYS_TEXT = "Press new a new key...";
@@ -197,12 +199,10 @@ class Cookiezi {
         this.amount += this.cps / TPS;
     }
     update_elements() {
-        // NOTE: Adjusting TPS here to account for setTimeout's delays shrug
-        const tps_adj = Math.floor(TPS - TPS / 5);
-        const speed = this.cps + (this.clicks.tapped * tps_adj / this.clicks.ticks);
+        const speed = this.cps + (this.clicks.tapped * TPS_ADJ / this.clicks.ticks);
         AMOUNT_TEXT_ELEMENT.textContent = Math.floor(this.amount).toString() + CENT;
         TAP_POWER_TEXT_ELEMENT.textContent = "Tap power: " + this.power;
-        CPS_TEXT_ELEMENT.textContent = "CP/S: " + speed.toFixed(1) + " (" + Math.round(speed * 60 / 4) + " BPM)";
+        CPS_TEXT_ELEMENT.textContent = "CP/S: " + speed.toFixed(1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
         UPGRADES_COUNT_TEXT_ELEMENT.textContent = "Upgrades bought: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
     }
     update_passive_cps() {
@@ -220,7 +220,7 @@ class Cookiezi {
             // NOTE:
             // TPS should be the beginning value instead of 0, because cp/s is being calculated as:
             // TOTAL_TAPPED * TPS / TICKS -> TOTAL_TAPPED / SECONDS_PASSED
-            this.clicks.tapped = Math.floor(this.clicks.tapped / this.clicks.ticks * TPS);
+            this.clicks.tapped = Math.floor(this.clicks.tapped / this.clicks.ticks * TPS_ADJ);
             this.clicks.ticks = TPS;
         }
         else if (this.clicks.tapped > 0) {
@@ -290,8 +290,8 @@ CHANGE_KEYS_BUTTON_ELEMENT.onclick = (() => {
 });
 // Invoke CP/S even when tab is inactive
 window.onfocus = () => {
-    let current_time = new Date().getTime();
-    let time_difference = current_time - cookiezi.last_inactive_time;
+    const current_time = new Date().getTime();
+    const time_difference = current_time - cookiezi.last_inactive_time;
     if (time_difference > 1000) {
         cookiezi.amount += cookiezi.cps * (time_difference / 1000);
     }
