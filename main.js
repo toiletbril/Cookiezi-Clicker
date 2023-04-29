@@ -2,7 +2,6 @@
 /*
  * TODO:
  * - Display only nearest upgrades in the shop, and hide the rest.
- * - Account for inactive tabs. Currently, making the tab inactive will not update the points.
  * - Cascading style sheet =D
  *
  */
@@ -101,6 +100,7 @@ function make_shop_item(item, item_description, element_id, click_action) {
 ////////////////////////
 class Cookiezi {
     constructor() {
+        this.last_inactive_time = new Date().getTime();
         this.clicks = {
             is_tapping: false,
             stopped_interval: 0,
@@ -230,7 +230,6 @@ class Cookiezi {
     update() {
         this.invoke_cps();
         this.update_cps();
-        console.log(`tapped: ${this.clicks.tapped}\nticks: ${this.clicks.ticks}\ncps = ${this.clicks.tapped / (this.clicks.ticks / TPS)}`);
         this.update_elements();
     }
 }
@@ -289,3 +288,14 @@ CHANGE_KEYS_BUTTON_ELEMENT.onclick = (() => {
     cookiezi.settings.is_changing_keys = 0;
     CHANGE_KEYS_BUTTON_ELEMENT.textContent = CHANGING_KEYS_TEXT;
 });
+// Invoke CP/S even when tab is inactive
+window.onfocus = () => {
+    let current_time = new Date().getTime();
+    let time_difference = current_time - cookiezi.last_inactive_time;
+    if (time_difference > 1000) {
+        cookiezi.amount += cookiezi.cps * (time_difference / 1000);
+    }
+};
+window.onblur = () => {
+    cookiezi.last_inactive_time = new Date().getTime();
+};
