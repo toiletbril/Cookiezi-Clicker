@@ -33,125 +33,16 @@ const CHANGE_KEYS_TEXT = "Change keys...";
 const CHANGING_KEYS_TEXT = "Press new a new key...";
 const CURRENT_KEYS_TEXT = (k1, k2, n) => `Tap ${n <= 0 ? "?" : k1.toUpperCase()}/${n <= 1 ? "?" : k2.toUpperCase()} to gain points.`;
 const CENT = "¢";
-const CPS_UPGRADES = [
-    {
-        id: 0,
-        name: "Logitech",
-        cost: 80,
-        gives: 0.4,
-    },
-    {
-        id: 1,
-        name: "Left click",
-        cost: 240,
-        gives: 1,
-    },
-    {
-        id: 2,
-        name: "A drill",
-        cost: 860,
-        gives: 4,
-    },
-    {
-        id: 3,
-        name: "Vaxei",
-        cost: 6420,
-        gives: 10,
-    },
-    {
-        id: 4,
-        name: "Cookiezi",
-        cost: 24500,
-        gives: 50,
-    },
-];
-const CPS_COST_MULTIPLIER = 1.15;
-const GENERAL_UPGRADES = [
-    {
-        id: 0,
-        name: "Buldak",
-        desc: "+0.6 tap power",
-        cost: 520,
-        action: (self) => {
-            self.power += 0.6;
-        }
-    },
-    {
-        id: 1,
-        name: "Better wire",
-        desc: "Logitech is twice more effective",
-        cost: 840,
-        action: (self) => {
-            CPS_UPGRADES[0].gives *= 2;
-            self.update_passive_cps;
-        }
-    },
-    {
-        id: 2,
-        name: "Mousepad",
-        desc: "+1.2 tap power",
-        cost: 1300,
-        action: (self) => {
-            self.power += 1.2;
-        }
-    },
-    {
-        id: 3,
-        name: "Wacom",
-        desc: "+3.2 tap power",
-        cost: 4600,
-        action: (self) => {
-            self.power += 2.8;
-        }
-    },
-    {
-        id: 4,
-        name: "Power outlet",
-        desc: "Left click and drill become better",
-        cost: 10640,
-        action: (self) => {
-            CPS_UPGRADES[1].gives *= 3;
-            CPS_UPGRADES[2].gives *= 2;
-            self.update_passive_cps;
-        }
-    },
-    {
-        id: 5,
-        name: "Sugar",
-        desc: "Vaxei goes godmode",
-        cost: 18900,
-        action: (self) => {
-            CPS_UPGRADES[3].gives *= 2;
-            self.update_passive_cps;
-        }
-    },
-    {
-        id: 6,
-        name: "Tablet cover",
-        desc: "Click power is doubled",
-        cost: 31200,
-        action: (self) => {
-            self.power *= 2;
-        }
-    },
-    {
-        id: 7,
-        name: "Cookiezi",
-        desc: "Cookiezi",
-        cost: 69420,
-        action: (self) => {
-            CPS_UPGRADES[4].gives *= 2;
-            self.update_passive_cps;
-        }
-    }
-];
 ////////////////////////
 function assert(desc, cond) {
     if (!cond)
         throw new Error("Assertion failed: " + desc);
 }
-function create_upgrade_array(array) {
+function create_cps_array(array) {
     return new Array(array.length).fill(0);
+}
+function create_multiplier_array(array) {
+    return new Array(array.length).fill(1);
 }
 function make_shop_item(item, item_description, element_id, click_action) {
     const item_element = document.createElement("li");
@@ -172,8 +63,219 @@ function make_shop_item(item, item_description, element_id, click_action) {
     return item_element;
 }
 ////////////////////////
-class Cookiezi {
+class Shop {
     constructor() {
+        this.cps_upgrades = [
+            {
+                id: 0,
+                name: "Logitech",
+                cost: 80,
+                gives: 0.4,
+            },
+            {
+                id: 1,
+                name: "Left click",
+                cost: 240,
+                gives: 1,
+            },
+            {
+                id: 2,
+                name: "A drill",
+                cost: 860,
+                gives: 4,
+            },
+            {
+                id: 3,
+                name: "Vaxei",
+                cost: 6420,
+                gives: 10,
+            },
+            {
+                id: 4,
+                name: "Cookiezi",
+                cost: 24500,
+                gives: 50,
+            }
+        ];
+        this.cps_cost_multiplier = 1.15;
+        this.general_upgrades = [
+            {
+                id: 0,
+                name: "Buldak",
+                desc: "Very spicy. +0.6 tap power",
+                cost: 520,
+                action: {
+                    type: "tap_power",
+                    value: 0.6
+                }
+            },
+            {
+                id: 1,
+                name: "Better wire",
+                desc: "Logitech is twice more effective.",
+                cost: 840,
+                action: {
+                    type: "multiplier",
+                    item_ids: [0],
+                    value: 2
+                }
+            },
+            {
+                id: 2,
+                name: "Mousepad",
+                desc: "Less mouse drift. +1.2 tap power",
+                cost: 1300,
+                action: {
+                    type: "tap_power",
+                    value: 1.2
+                }
+            },
+            {
+                id: 3,
+                name: "Wacom",
+                desc: "+3.2 tap power",
+                cost: 4600,
+                action: {
+                    type: "tap_power",
+                    value: 3.2
+                }
+            },
+            {
+                id: 4,
+                name: "Power outlet",
+                desc: "Left click and drill become twice as effective.",
+                cost: 10640,
+                action: {
+                    type: "multiplier",
+                    item_ids: [1, 2],
+                    value: 2
+                }
+            },
+            {
+                id: 5,
+                name: "Sugar",
+                desc: "Vaxei becomes twice as effective.",
+                cost: 18900,
+                action: {
+                    type: "multiplier",
+                    item_ids: [3],
+                    value: 2
+                }
+            },
+            {
+                id: 6,
+                name: "Tablet cover",
+                desc: "Click power is doubled.",
+                cost: 23200,
+                action: {
+                    type: "tap_power_multiplier",
+                    value: 2
+                }
+            },
+            {
+                id: 7,
+                name: "Cookiezi comeback",
+                desc: "Cookiezi becomes twice as effective.",
+                cost: 69420,
+                action: {
+                    type: "multiplier",
+                    item_ids: [4],
+                    value: 2
+                }
+            }
+        ];
+        this.cps_upgrades_bought = create_cps_array(this.cps_upgrades);
+        this.upgrades_bought = create_cps_array(this.general_upgrades);
+    }
+    get_multipliers() {
+        const result_array = new Array(this.cps_upgrades.length).fill(1);
+        for (const i in this.general_upgrades) {
+            if (this.upgrades_bought[i] === 0)
+                continue;
+            const upgrade = this.general_upgrades[i];
+            if (upgrade?.action.type == "multiplier") {
+                for (const j in upgrade.action.item_ids) {
+                    const id = upgrade.action.item_ids[j];
+                    result_array[id] *= this.upgrades_bought[id] * upgrade.action.value;
+                }
+            }
+        }
+        return result_array;
+    }
+    get_tap_power() {
+        let result = 1;
+        let multiplier = 1;
+        for (const i in this.upgrades_bought) {
+            if (this.upgrades_bought[i] === 0)
+                continue;
+            const upgrade = this.general_upgrades[i];
+            switch (upgrade?.action.type) {
+                case "tap_power":
+                    {
+                        result += upgrade.action.value * this.upgrades_bought[i];
+                    }
+                    break;
+                case "tap_power_multiplier":
+                    {
+                        multiplier *= upgrade.action.value * this.upgrades_bought[i];
+                    }
+                    break;
+            }
+        }
+        return result * multiplier;
+    }
+    buy(item) {
+        this.upgrades_bought[item.id] += 1;
+        const button = document.getElementById("item" + item.id);
+        button.disabled = true;
+        this.update_shop_element();
+        this.update_cps_shop_element();
+    }
+    buy_cps(item) {
+        this.cps_upgrades_bought[item.id] += 1;
+        this.cps_upgrades[item.id].cost = Math.floor(this.cps_upgrades[item.id].cost * this.cps_cost_multiplier);
+        this.update_cps_shop_element();
+    }
+    update_shop_element() {
+        for (const i in this.upgrades_bought) {
+            const item = this.general_upgrades[i];
+            if (this.upgrades_bought[i] > 0) {
+                let button = document.getElementById("item" + item.id);
+                button.disabled = true;
+            }
+            if (this.upgrades_bought[parseInt(i) - 1] > 0) {
+                let li = document.getElementById("list_item" + item.id);
+                li.hidden = false;
+            }
+        }
+    }
+    update_cps_shop_element() {
+        const multipliers = this.get_multipliers();
+        for (const i in this.cps_upgrades_bought) {
+            const item = this.cps_upgrades[i];
+            let button = document.getElementById("cps_item" + item.id);
+            let desc = document.getElementById("pcps_item" + item.id);
+            const count = this.cps_upgrades_bought[item.id];
+            const producing = count > 0 ? `| You have ${count}, producing ${(item.gives * count * multipliers[item.id]).toFixed(1)} CP/s` : "";
+            button.textContent = `${item.name}, ${item.cost}c`;
+            desc.textContent = `+${item.gives * multipliers[item.id]} CP/s\n
+                                ${producing}`;
+            if (this.cps_upgrades_bought[parseInt(i) - 1] > 0) {
+                let li = document.getElementById("list_cps_item" + item.id);
+                li.hidden = false;
+            }
+        }
+    }
+    get_cps() {
+        const multipliers = this.get_multipliers();
+        assert("multipliers is valid length", multipliers.length === this.cps_upgrades.length);
+        return this.cps_upgrades_bought
+            .map((a, i) => a * multipliers[i] * this.cps_upgrades[i].gives)
+            .reduce((a, b) => a + b);
+    }
+}
+class Cookiezi {
+    constructor(shop) {
         this.last_inactive_time = new Date().getTime();
         this.clicks = {
             is_tapping: false,
@@ -184,8 +286,8 @@ class Cookiezi {
         this.amount = 0;
         this.power = 1;
         this.cps = 0;
-        this.cps_upgrades = create_upgrade_array(CPS_UPGRADES);
-        this.upgrades = create_upgrade_array(GENERAL_UPGRADES);
+        this.shop = shop;
+        this.multipliers = create_multiplier_array(shop.cps_upgrades);
         this.settings = {
             keys: [
                 {
@@ -200,53 +302,55 @@ class Cookiezi {
             is_changing_keys: -1
         };
     }
-    populate_cps_shop() {
-        for (const i in CPS_UPGRADES) {
-            const item = CPS_UPGRADES[i];
-            const item_element = make_shop_item(item, `+${item.gives} CP/S`, "cps_item" + item.id, this.buy_cps(item));
+    initialize_shop() {
+        for (const i in this.shop.cps_upgrades) {
+            const item = this.shop.cps_upgrades[i];
+            const item_element = make_shop_item(item, `+${item.gives} CP/s`, "cps_item" + item.id, this.buy_cps(item));
+            if (parseInt(i) > 0)
+                item_element.hidden = true;
             CPS_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
         }
-    }
-    populate_shop() {
-        for (const i in GENERAL_UPGRADES) {
-            const item = GENERAL_UPGRADES[i];
+        for (const i in this.shop.general_upgrades) {
+            const item = this.shop.general_upgrades[i];
             const item_element = make_shop_item(item, item.desc, "item" + item.id, this.buy(item));
+            if (parseInt(i) > 0)
+                item_element.hidden = true;
             GENERAL_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
         }
     }
     // Buy methods return an action that you can put on a button.
     buy_cps(item) {
         const self = this;
+        const shop = this.shop;
         return function () {
             if (self.amount < item.cost) {
                 alert("Not enough amount to buy \"" + item.name + "\" :(");
                 return;
             }
-            self.amount -= item.cost;
-            self.cps_upgrades[item.id] += 1;
-            // Increase price
-            CPS_UPGRADES[item.id].cost = Math.floor(CPS_UPGRADES[item.id].cost * CPS_COST_MULTIPLIER);
-            // Update UI
-            let button = document.getElementById("cps_item" + item.id);
-            button.textContent = `${item.name}, ${item.cost}c`;
-            self.update_passive_cps();
+            shop.buy_cps(item);
+            self.update_cps_shop_element();
+            self.cps = self.shop.get_cps();
         };
     }
     buy(item) {
         const self = this;
+        const shop = this.shop;
         return function () {
             if (self.amount < item.cost) {
                 alert("Not enough amount to buy \"" + item.name + "\" :(");
                 return;
             }
-            self.amount -= item.cost;
-            self.upgrades[item.id] += 1;
-            item.action(self);
-            // This is general upgrade, so no need to change the price. Intead, remove the item from shop.
-            let button = document.getElementById("item" + item.id);
-            button.disabled = true;
-            self.update_passive_cps();
+            shop.buy(item);
+            self.update_shop_element();
+            self.power = shop.get_tap_power();
+            self.cps = shop.get_cps();
         };
+    }
+    update_cps_shop_element() {
+        this.shop.update_cps_shop_element();
+    }
+    update_shop_element() {
+        this.shop.update_shop_element();
     }
     // This is to avoid clicking when holding button down.
     press_key(k) {
@@ -274,18 +378,11 @@ class Cookiezi {
         const speed = this.cps + (this.clicks.tapped * TPS_ADJ / this.clicks.ticks);
         AMOUNT_TEXT_ELEMENT.textContent = Math.floor(this.amount).toString() + CENT;
         TAP_POWER_TEXT_ELEMENT.textContent = "Tap power: " + this.power;
-        CPS_TEXT_ELEMENT.textContent = "CP/S: " + speed.toFixed(1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
-        UPGRADES_COUNT_TEXT_ELEMENT.textContent = "Upgrades bought: " + this.cps_upgrades.reduce((a, b) => a + b, 0);
+        CPS_TEXT_ELEMENT.textContent = "CP/s: " + speed.toFixed(1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
+        UPGRADES_COUNT_TEXT_ELEMENT.textContent = "Upgrades bought: " + this.shop.cps_upgrades_bought.reduce((a, b) => a + b, 0);
     }
     update_passive_cps() {
-        let result_cps = 0;
-        for (const i in this.cps_upgrades) {
-            const item = CPS_UPGRADES[i];
-            result_cps += item.gives * this.cps_upgrades[i];
-            const button = document.getElementById("pcps_item" + i);
-            button.textContent = `+${item.gives} CP/S`;
-        }
-        this.cps = result_cps;
+        this.cps = this.shop.get_cps();
     }
     update_cps() {
         if (this.clicks.is_tapping) {
@@ -293,7 +390,7 @@ class Cookiezi {
         }
         else if (this.clicks.ticks != TPS) {
             // NOTE:
-            // TPS should be the beginning value instead of 0, because cp/s is being calculated as:
+            // TPS should be the beginning value instead of 0, because CP/s is being calculated as:
             // TOTAL_TAPPED * TPS / TICKS -> TOTAL_TAPPED / SECONDS_PASSED
             this.clicks.tapped = Math.floor(this.clicks.tapped / this.clicks.ticks * TPS_ADJ);
             this.clicks.ticks = TPS;
@@ -309,10 +406,9 @@ class Cookiezi {
     }
 }
 ////////////////////////
-const cookiezi = new Cookiezi();
-cookiezi.update();
-cookiezi.populate_cps_shop();
-cookiezi.populate_shop();
+const shop = new Shop();
+const cookiezi = new Cookiezi(shop);
+cookiezi.initialize_shop();
 assert("settings.keys is of KEY_COUNT size", cookiezi.settings.keys.length == KEY_COUNT);
 setInterval(() => {
     cookiezi.update();
@@ -366,7 +462,7 @@ CHANGE_KEYS_BUTTON_ELEMENT.onclick = (() => {
     KEYS_TEXT_ELEMENT.textContent = CURRENT_KEYS_TEXT(k1.key, k2.key, cookiezi.settings.is_changing_keys);
     CHANGE_KEYS_BUTTON_ELEMENT.textContent = CHANGING_KEYS_TEXT;
 });
-// Invoke CP/S even when tab is inactive
+// Invoke CP/s even when tab is inactive
 window.onfocus = () => {
     const current_time = new Date().getTime();
     const time_difference = current_time - cookiezi.last_inactive_time;
