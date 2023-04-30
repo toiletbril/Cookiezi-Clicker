@@ -1,7 +1,5 @@
 /*
  * TODO:
- * - Display how much you've bought of each upgrade somewhere near the buy button.
- * - Display only nearest upgrades in the shop, and hide the rest.
  * - Cascading style sheet
  */
 
