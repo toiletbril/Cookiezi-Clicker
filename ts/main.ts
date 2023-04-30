@@ -1,19 +1,27 @@
-/*
- * TODO:
- * - Cascading style sheet
- */
+  //////////////////////////////*
+ /*                             *
+ *      Cookiezi Clicker =D     *
+ *                             */
+ ///////////////////////////////
 
-////////////////////////
-
-const AMOUNT_TEXT_ELEMENT = document.getElementById("amount") as HTMLElement;
-const CPS_SHOP_ITEMS_LIST_ELEMENT = document.getElementById("cps_shop_items") as HTMLUListElement;
-const GENERAL_SHOP_ITEMS_LIST_ELEMENT = document.getElementById("shop_items") as HTMLUListElement;
-const TAP_POWER_TEXT_ELEMENT = document.getElementById("tap_power") as HTMLElement;
-const CPS_TEXT_ELEMENT = document.getElementById("cps") as HTMLElement;
-const UPGRADES_COUNT_TEXT_ELEMENT = document.getElementById("upgrades_count") as HTMLElement;
-const CHANGE_KEYS_BUTTON_ELEMENT = document.getElementById("change_keys") as HTMLButtonElement;
-const KEYS_TEXT_ELEMENT = document.getElementById("keys") as HTMLButtonElement;
-const MAIN_DIV_ELEMENT = document.getElementById("main") as HTMLDivElement;
+const AMOUNT_TEXT_ELEMENT
+    = document.getElementById("amount") as HTMLElement;
+const CPS_SHOP_ITEMS_LIST_ELEMENT
+    = document.getElementById("cps_shop_items") as HTMLUListElement;
+const GENERAL_SHOP_ITEMS_LIST_ELEMENT
+    = document.getElementById("shop_items") as HTMLUListElement;
+const TAP_POWER_TEXT_ELEMENT
+    = document.getElementById("tap_power") as HTMLElement;
+const CPS_TEXT_ELEMENT
+    = document.getElementById("cps") as HTMLElement;
+const UPGRADES_COUNT_TEXT_ELEMENT
+    = document.getElementById("upgrades_count") as HTMLElement;
+const CHANGE_KEYS_BUTTON_ELEMENT
+    = document.getElementById("change_keys") as HTMLButtonElement;
+const KEYS_TEXT_ELEMENT
+    = document.getElementById("keys") as HTMLButtonElement;
+const MAIN_DIV_ELEMENT
+    = document.getElementById("main") as HTMLDivElement;
 
 assert("All elements are not null", // dude dynamic languages
     !!AMOUNT_TEXT_ELEMENT &&
@@ -29,17 +37,21 @@ assert("All elements are not null", // dude dynamic languages
 
 const TPS = 40;
 
-// NOTE: This is here to account for setTimeout's delays ;(
-const TPS_ADJ = Math.floor(TPS - TPS / 9);
+// This is here to account for setTimeout's delays ;(
+const TPS_ADJ = Math.floor(TPS - TPS / 10);
 
 const KEY_COUNT = 2;
-const CHANGE_KEYS_TEXT = "Change keys..."
-const CHANGING_KEYS_TEXT = "Press new a new key..."
+const CHANGE_KEYS_TEXT
+    = "Change keys..."
+const CHANGING_KEYS_TEXT
+    = "Press new a new key..."
 const CURRENT_KEYS_TEXT = (k1: string, k2: string, n: number) =>
     `Tap ${n <= 0 ? "?" : k1.toUpperCase()}/${n <= 1 ? "?" : k2.toUpperCase()} to gain points.`
 
 const CENT = "¢";
 const FORMAT_CHAR = ",";
+
+const CPS_COST_MULTIPLIER = 1.15;
 
 ////////////////////////
 
@@ -60,7 +72,7 @@ function format_number(n: number, fixed: number): string {
     // Regex version
     return n.toFixed(fixed).replace(/\B(?=(\d{3})+(?!\d))/g, FORMAT_CHAR);
 
-    // Normal version, breaks with very large numbers
+    // NOTE: normal version, breaks with very large numbers
     /*
     if (n < 1000) return n.toString();
     let result = "";
@@ -151,30 +163,28 @@ class Shop {
         {
             id: 1,
             name: "Left click",
-            cost: 240,
+            cost: 340,
             gives: 1,
         },
         {
             id: 2,
             name: "A drill",
-            cost: 860,
+            cost: 1860,
             gives: 4,
         },
         {
             id: 3,
             name: "Vaxei",
-            cost: 6420,
+            cost: 8420,
             gives: 10,
         },
         {
             id: 4,
             name: "Cookiezi",
-            cost: 24500,
+            cost: 44500,
             gives: 50,
         }
     ]
-
-    cps_cost_multiplier = 1.15;
 
     general_upgrades: IGeneralUpgrade[] = [
         {
@@ -328,8 +338,7 @@ class Shop {
 
     buy_cps(item: ICpsUpgrade) {
         this.cps_upgrades_bought[item.id] += 1;
-        this.cps_upgrades[item.id]!.cost = Math.floor(
-            this.cps_upgrades[item.id]!.cost * this.cps_cost_multiplier);
+        this.cps_upgrades[item.id]!.cost = Math.floor(this.cps_upgrades[item.id]!.cost * CPS_COST_MULTIPLIER);
         this.update_cps_shop_element();
     }
 
@@ -362,9 +371,10 @@ class Shop {
                 ? `| You have ${count}, producing ${(item.gives * count * multipliers[item.id]!).toFixed(1)} ${CENT}/s`
                 : "";
 
-            button.textContent = `${item.name}, ${item.cost}${CENT}`;
-            desc.textContent = `+${item.gives * multipliers[item.id]!} ${CENT}/s\n
-                                ${producing}`;
+            button.textContent =
+                `${item.name}, ${item.cost}${CENT}`;
+            desc.textContent =
+                `+${item.gives * multipliers[item.id]!} ${CENT}/s\n${producing}`;
 
             if (this.cps_upgrades_bought[parseInt(i) - 1]! > 0) {
                 let li = document.getElementById("list_cps_item" + item.id) as HTMLLIElement;
@@ -506,10 +516,14 @@ class Cookiezi {
     update_elements(): void {
         const speed = this.cps + (this.clicks.tapped * TPS_ADJ / this.clicks.ticks);
 
-        AMOUNT_TEXT_ELEMENT.textContent = format_number(Math.floor(this.amount), 0) + CENT;
-        CPS_TEXT_ELEMENT.textContent = CENT + "/s: " + format_number(speed, 1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
-        TAP_POWER_TEXT_ELEMENT.textContent = "Tap power: " + this.power;
-        UPGRADES_COUNT_TEXT_ELEMENT.textContent = "Upgrades bought: " + this.shop.cps_upgrades_bought.reduce((a, b) => a + b, 0);
+        AMOUNT_TEXT_ELEMENT.textContent =
+            format_number(Math.floor(this.amount), 0) + CENT;
+        CPS_TEXT_ELEMENT.textContent =
+            CENT + "/s: " + format_number(speed, 1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
+        TAP_POWER_TEXT_ELEMENT.textContent =
+            "Tap power: " + this.power;
+        UPGRADES_COUNT_TEXT_ELEMENT.textContent =
+            "Upgrades bought: " + this.shop.cps_upgrades_bought.reduce((a, b) => a + b, 0);
     }
 
     update_passive_cps(): void {
