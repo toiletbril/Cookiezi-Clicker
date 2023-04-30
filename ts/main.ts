@@ -36,7 +36,7 @@ const KEY_COUNT = 2;
 const CHANGE_KEYS_TEXT = "Change keys..."
 const CHANGING_KEYS_TEXT = "Press new a new key..."
 const CURRENT_KEYS_TEXT = (k1: string, k2: string, n: number) =>
-    `Tap ${n <= 0 ? "?" : k1.toUpperCase() }/${n <= 1 ? "?" : k2.toUpperCase()} to gain points.`
+    `Tap ${n <= 0 ? "?" : k1.toUpperCase()}/${n <= 1 ? "?" : k2.toUpperCase()} to gain points.`
 
 const CENT = "¢";
 
@@ -55,7 +55,7 @@ function create_multiplier_array<T>(array: Array<T>): Array<number> {
 }
 
 function make_shop_item(item: ICpsUpgrade | IGeneralUpgrade, item_description: string,
-                        element_id: string, click_action: () => void): HTMLLIElement {
+    element_id: string, click_action: () => void): HTMLLIElement {
     const item_element = document.createElement("li");
     const div = document.createElement("div");
     const p = document.createElement("p");
@@ -88,8 +88,8 @@ interface ICpsUpgrade {
 }
 
 type ActionType = "multiplier"
-                | "tap_power"
-                | "tap_power_multiplier"
+    | "tap_power"
+    | "tap_power_multiplier"
 
 interface IGeneralUpgrade {
     id: number,
@@ -424,7 +424,7 @@ class Cookiezi {
         const shop = this.shop;
         return function () {
             if (self.amount < item.cost) {
-                alert("Not enough " + CENT +  " to buy \"" + item.name + "\" :(");
+                alert("Not enough " + CENT + " to buy \"" + item.name + "\" :(");
                 return;
             }
             self.amount -= item.cost;
