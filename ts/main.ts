@@ -553,8 +553,8 @@ class Cookiezi {
 
 ////////////////////////
 
-const shop = new Shop();
-const cookiezi = new Cookiezi(shop);
+const shop: Shop = new Shop();
+const cookiezi: Cookiezi = new Cookiezi(shop);
 
 cookiezi.initialize_shop();
 
