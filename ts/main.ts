@@ -48,7 +48,7 @@ const CHANGING_KEYS_TEXT
 const CURRENT_KEYS_TEXT = (k1: string, k2: string, n: number) =>
     `Tap ${n <= 0 ? "?" : k1.toUpperCase()}/${n <= 1 ? "?" : k2.toUpperCase()} to gain points.`
 
-const CENT = "¢";
+const CURRENCY = "pp";
 const FORMAT_CHAR = ",";
 
 const CPS_COST_MULTIPLIER = 1.15;
@@ -57,14 +57,6 @@ const CPS_COST_MULTIPLIER = 1.15;
 
 function assert(desc: string, cond: boolean): void {
     if (!cond) throw new Error("Assertion failed: " + desc);
-}
-
-function create_cps_array<T>(array: Array<T>): Array<number> {
-    return new Array<number>(array.length).fill(0);
-}
-
-function create_multiplier_array<T>(array: Array<T>): Array<number> {
-    return new Array<number>(array.length).fill(1);
 }
 
 // 1000000 -> 1,000,000
@@ -96,7 +88,7 @@ function make_shop_item(item: ICpsUpgrade | IGeneralUpgrade, item_description: s
     const item_element = document.createElement("li");
     const div = document.createElement("div");
     const p = document.createElement("p");
-    const item_text = document.createTextNode(`${item.name}, ${item.cost}${CENT}`);
+    const item_text = document.createTextNode(`${item.name}, ${item.cost}${CURRENCY}`);
     const buy_button = document.createElement("button");
     const desc = document.createTextNode(item_description)
 
@@ -277,8 +269,8 @@ class Shop {
     upgrades_bought: number[];
 
     constructor() {
-        this.cps_upgrades_bought = create_cps_array(this.cps_upgrades);
-        this.upgrades_bought = create_cps_array(this.general_upgrades);
+        this.cps_upgrades_bought = new Array<number>(this.cps_upgrades.length).fill(0);
+        this.upgrades_bought = new Array<number>(this.general_upgrades.length).fill(0);
     }
 
     get_multipliers(): Array<number> {
@@ -347,12 +339,12 @@ class Shop {
             const item = this.general_upgrades[i]!;
 
             if (this.upgrades_bought[i]! > 0) {
-                let button = document.getElementById("item" + item.id) as HTMLButtonElement;
+                const button = document.getElementById("item" + item.id) as HTMLButtonElement;
                 button.disabled = true;
             }
 
             if (this.upgrades_bought[parseInt(i) - 1]! > 0) {
-                let li = document.getElementById("list_item" + item.id) as HTMLLIElement;
+                const li = document.getElementById("list_item" + item.id) as HTMLLIElement;
                 li.hidden = false;
             }
         }
@@ -363,21 +355,21 @@ class Shop {
         for (const i in this.cps_upgrades_bought) {
             const item = this.cps_upgrades[i]!;
 
-            let button = document.getElementById("cps_item" + item.id) as HTMLButtonElement;
-            let desc = document.getElementById("pcps_item" + item.id) as HTMLParagraphElement;
+            const button = document.getElementById("cps_item" + item.id) as HTMLButtonElement;
+            const desc = document.getElementById("pcps_item" + item.id) as HTMLParagraphElement;
 
             const count = this.cps_upgrades_bought[item.id]!;
             const producing = count > 0
-                ? `| You have ${count}, producing ${(item.gives * count * multipliers[item.id]!).toFixed(1)} ${CENT}/s`
+                ? `| You have ${count}, producing ${(item.gives * count * multipliers[item.id]!).toFixed(1)} ${CURRENCY}/s`
                 : "";
 
             button.textContent =
-                `${item.name}, ${item.cost}${CENT}`;
+                `${item.name}, ${item.cost}${CURRENCY}`;
             desc.textContent =
-                `+${item.gives * multipliers[item.id]!} ${CENT}/s\n${producing}`;
+                `+${item.gives * multipliers[item.id]!} ${CURRENCY}/s\n${producing}`;
 
             if (this.cps_upgrades_bought[parseInt(i) - 1]! > 0) {
-                let li = document.getElementById("list_cps_item" + item.id) as HTMLLIElement;
+                const li = document.getElementById("list_cps_item" + item.id) as HTMLLIElement;
                 li.hidden = false;
             }
         }
@@ -426,7 +418,7 @@ class Cookiezi {
     initialize_shop() {
         for (const i in this.shop.cps_upgrades) {
             const item = this.shop.cps_upgrades[i]!;
-            const item_element = make_shop_item(item, `+${item.gives} ${CENT}/s`, "cps_item" + item.id, this.buy_cps(item));
+            const item_element = make_shop_item(item, `+${item.gives} ${CURRENCY}/s`, "cps_item" + item.id, this.buy_cps(item));
 
             if (parseInt(i) > 0) item_element.hidden = true;
             CPS_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
@@ -446,7 +438,7 @@ class Cookiezi {
         const self = this;
         return function () {
             if (self.amount < item.cost) {
-                alert("Not enough " + CENT + " to buy \"" + item.name + "\" :(");
+                alert("Not enough " + CURRENCY + " to buy \"" + item.name + "\" :(");
                 return;
             }
             self.amount -= item.cost;
@@ -462,7 +454,7 @@ class Cookiezi {
         const self = this;
         return function () {
             if (self.amount < item.cost) {
-                alert("Not enough " + CENT + " to buy \"" + item.name + "\" :(");
+                alert("Not enough " + CURRENCY + " to buy \"" + item.name + "\" :(");
                 return;
             }
             self.amount -= item.cost;
@@ -517,9 +509,9 @@ class Cookiezi {
         const speed = this.cps + (this.clicks.tapped * TPS_ADJ / this.clicks.ticks);
 
         AMOUNT_TEXT_ELEMENT.textContent =
-            format_number(Math.floor(this.amount), 0) + CENT;
+            format_number(Math.floor(this.amount), 0) + CURRENCY;
         CPS_TEXT_ELEMENT.textContent =
-            CENT + "/s: " + format_number(speed, 1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
+            CURRENCY + "/s: " + format_number(speed, 1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
         TAP_POWER_TEXT_ELEMENT.textContent =
             "Tap power: " + this.power;
         UPGRADES_COUNT_TEXT_ELEMENT.textContent =
