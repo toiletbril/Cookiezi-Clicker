@@ -200,6 +200,13 @@ class Shop {
         }
         return result_array;
     }
+    get_cps() {
+        const multipliers = this.get_multipliers();
+        assert("multipliers is valid length", multipliers.length === this.cps_upgrades.length);
+        return this.cps_upgrades_bought
+            .map((a, i) => a * multipliers[i] * this.cps_upgrades[i].gives)
+            .reduce((a, b) => a + b);
+    }
     get_tap_power() {
         let result = 1;
         let multiplier = 1;
@@ -254,22 +261,17 @@ class Shop {
             let button = document.getElementById("cps_item" + item.id);
             let desc = document.getElementById("pcps_item" + item.id);
             const count = this.cps_upgrades_bought[item.id];
-            const producing = count > 0 ? `| You have ${count}, producing ${(item.gives * count * multipliers[item.id]).toFixed(1)} CP/s` : "";
-            button.textContent = `${item.name}, ${item.cost}c`;
-            desc.textContent = `+${item.gives * multipliers[item.id]} CP/s\n
+            const producing = count > 0
+                ? `| You have ${count}, producing ${(item.gives * count * multipliers[item.id]).toFixed(1)} ${CENT}/s`
+                : "";
+            button.textContent = `${item.name}, ${item.cost}${CENT}`;
+            desc.textContent = `+${item.gives * multipliers[item.id]} ${CENT}/s\n
                                 ${producing}`;
             if (this.cps_upgrades_bought[parseInt(i) - 1] > 0) {
                 let li = document.getElementById("list_cps_item" + item.id);
                 li.hidden = false;
             }
         }
-    }
-    get_cps() {
-        const multipliers = this.get_multipliers();
-        assert("multipliers is valid length", multipliers.length === this.cps_upgrades.length);
-        return this.cps_upgrades_bought
-            .map((a, i) => a * multipliers[i] * this.cps_upgrades[i].gives)
-            .reduce((a, b) => a + b);
     }
 }
 class Cookiezi {
@@ -285,7 +287,6 @@ class Cookiezi {
         this.power = 1;
         this.cps = 0;
         this.shop = shop;
-        this.multipliers = create_multiplier_array(shop.cps_upgrades);
         this.settings = {
             keys: [
                 {
@@ -303,7 +304,7 @@ class Cookiezi {
     initialize_shop() {
         for (const i in this.shop.cps_upgrades) {
             const item = this.shop.cps_upgrades[i];
-            const item_element = make_shop_item(item, `+${item.gives} CP/s`, "cps_item" + item.id, this.buy_cps(item));
+            const item_element = make_shop_item(item, `+${item.gives} ${CENT}/s`, "cps_item" + item.id, this.buy_cps(item));
             if (parseInt(i) > 0)
                 item_element.hidden = true;
             CPS_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
@@ -322,7 +323,7 @@ class Cookiezi {
         const shop = this.shop;
         return function () {
             if (self.amount < item.cost) {
-                alert("Not enough amount to buy \"" + item.name + "\" :(");
+                alert("Not enough " + CENT + " to buy \"" + item.name + "\" :(");
                 return;
             }
             self.amount -= item.cost;
@@ -336,7 +337,7 @@ class Cookiezi {
         const shop = this.shop;
         return function () {
             if (self.amount < item.cost) {
-                alert("Not enough amount to buy \"" + item.name + "\" :(");
+                alert("Not enough " + CENT + " to buy \"" + item.name + "\" :(");
                 return;
             }
             self.amount -= item.cost;
@@ -378,7 +379,7 @@ class Cookiezi {
         const speed = this.cps + (this.clicks.tapped * TPS_ADJ / this.clicks.ticks);
         AMOUNT_TEXT_ELEMENT.textContent = Math.floor(this.amount).toString() + CENT;
         TAP_POWER_TEXT_ELEMENT.textContent = "Tap power: " + this.power;
-        CPS_TEXT_ELEMENT.textContent = "CP/s: " + speed.toFixed(1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
+        CPS_TEXT_ELEMENT.textContent = CENT + "/s: " + speed.toFixed(1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
         UPGRADES_COUNT_TEXT_ELEMENT.textContent = "Upgrades bought: " + this.shop.cps_upgrades_bought.reduce((a, b) => a + b, 0);
     }
     update_passive_cps() {
