@@ -406,6 +406,8 @@ class Cookiezi {
                 alert("Not enough amount to buy \"" + item.name + "\" :(");
                 return;
             }
+            self.amount -= item.cost;
+
             shop.buy_cps(item);
             self.update_cps_shop_element();
 
@@ -421,6 +423,8 @@ class Cookiezi {
                 alert("Not enough amount to buy \"" + item.name + "\" :(");
                 return;
             }
+            self.amount -= item.cost;
+
             shop.buy(item);
 
             self.update_shop_element();
