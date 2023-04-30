@@ -31,6 +31,7 @@ const CHANGE_KEYS_TEXT = "Change keys...";
 const CHANGING_KEYS_TEXT = "Press new a new key...";
 const CURRENT_KEYS_TEXT = (k1, k2, n) => `Tap ${n <= 0 ? "?" : k1.toUpperCase()}/${n <= 1 ? "?" : k2.toUpperCase()} to gain points.`;
 const CENT = "¢";
+const FORMAT_CHAR = ",";
 ////////////////////////
 function assert(desc, cond) {
     if (!cond)
@@ -41,6 +42,28 @@ function create_cps_array(array) {
 }
 function create_multiplier_array(array) {
     return new Array(array.length).fill(1);
+}
+// 1000000 -> 1,000,000
+function format_number(n, fixed) {
+    // Regex version
+    return n.toFixed(fixed).replace(/\B(?=(\d{3})+(?!\d))/g, FORMAT_CHAR);
+    // Normal version, breaks with very large numbers
+    /*
+    if (n < 1000) return n.toString();
+    let result = "";
+
+    while (n > 999) {
+        let c = n % 1000;
+        let new_char = c < 10 ? "00" + c
+                     : c < 100 ? "0" + c
+                     : c
+
+        result += FORMAT_CHAR + new_char;
+        n = Math.floor((n - (n % 100)) / 1000);
+    }
+
+    return n + result;
+    */
 }
 function make_shop_item(item, item_description, element_id, click_action) {
     const item_element = document.createElement("li");
@@ -191,7 +214,7 @@ class Shop {
             if (this.upgrades_bought[i] === 0)
                 continue;
             const upgrade = this.general_upgrades[i];
-            if (upgrade?.action.type == "multiplier") {
+            if (upgrade?.action.type === "multiplier") {
                 for (const j in upgrade.action.item_ids) {
                     const id = upgrade.action.item_ids[j];
                     result_array[id] *= this.upgrades_bought[id] * upgrade.action.value;
@@ -278,8 +301,8 @@ class Cookiezi {
     constructor(shop) {
         this.last_inactive_time = new Date().getTime();
         this.clicks = {
-            is_tapping: false,
             stopped_interval: 0,
+            is_tapping: false,
             tapped: 0,
             ticks: TPS
         };
@@ -320,31 +343,29 @@ class Cookiezi {
     // Buy methods return an action that you can put on a button.
     buy_cps(item) {
         const self = this;
-        const shop = this.shop;
         return function () {
             if (self.amount < item.cost) {
                 alert("Not enough " + CENT + " to buy \"" + item.name + "\" :(");
                 return;
             }
             self.amount -= item.cost;
-            shop.buy_cps(item);
+            self.shop.buy_cps(item);
             self.update_cps_shop_element();
             self.cps = self.shop.get_cps();
         };
     }
     buy(item) {
         const self = this;
-        const shop = this.shop;
         return function () {
             if (self.amount < item.cost) {
                 alert("Not enough " + CENT + " to buy \"" + item.name + "\" :(");
                 return;
             }
             self.amount -= item.cost;
-            shop.buy(item);
+            self.shop.buy(item);
             self.update_shop_element();
-            self.power = shop.get_tap_power();
-            self.cps = shop.get_cps();
+            self.power = self.shop.get_tap_power();
+            self.cps = self.shop.get_cps();
         };
     }
     update_cps_shop_element() {
@@ -377,9 +398,9 @@ class Cookiezi {
     }
     update_elements() {
         const speed = this.cps + (this.clicks.tapped * TPS_ADJ / this.clicks.ticks);
-        AMOUNT_TEXT_ELEMENT.textContent = Math.floor(this.amount).toString() + CENT;
+        AMOUNT_TEXT_ELEMENT.textContent = format_number(Math.floor(this.amount), 0) + CENT;
+        CPS_TEXT_ELEMENT.textContent = CENT + "/s: " + format_number(speed, 1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
         TAP_POWER_TEXT_ELEMENT.textContent = "Tap power: " + this.power;
-        CPS_TEXT_ELEMENT.textContent = CENT + "/s: " + speed.toFixed(1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
         UPGRADES_COUNT_TEXT_ELEMENT.textContent = "Upgrades bought: " + this.shop.cps_upgrades_bought.reduce((a, b) => a + b, 0);
     }
     update_passive_cps() {
@@ -410,7 +431,7 @@ class Cookiezi {
 const shop = new Shop();
 const cookiezi = new Cookiezi(shop);
 cookiezi.initialize_shop();
-assert("settings.keys is of KEY_COUNT size", cookiezi.settings.keys.length == KEY_COUNT);
+assert("settings.keys is of KEY_COUNT size", cookiezi.settings.keys.length === KEY_COUNT);
 setInterval(() => {
     cookiezi.update();
 }, 1000 / TPS);

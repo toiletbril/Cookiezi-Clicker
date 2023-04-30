@@ -39,6 +39,7 @@ const CURRENT_KEYS_TEXT = (k1: string, k2: string, n: number) =>
     `Tap ${n <= 0 ? "?" : k1.toUpperCase()}/${n <= 1 ? "?" : k2.toUpperCase()} to gain points.`
 
 const CENT = "¢";
+const FORMAT_CHAR = ",";
 
 ////////////////////////
 
@@ -52,6 +53,30 @@ function create_cps_array<T>(array: Array<T>): Array<number> {
 
 function create_multiplier_array<T>(array: Array<T>): Array<number> {
     return new Array<number>(array.length).fill(1);
+}
+
+// 1000000 -> 1,000,000
+function format_number(n: number, fixed: number): string {
+    // Regex version
+    return n.toFixed(fixed).replace(/\B(?=(\d{3})+(?!\d))/g, FORMAT_CHAR);
+
+    // Normal version, breaks with very large numbers
+    /*
+    if (n < 1000) return n.toString();
+    let result = "";
+
+    while (n > 999) {
+        let c = n % 1000;
+        let new_char = c < 10 ? "00" + c
+                     : c < 100 ? "0" + c
+                     : c
+
+        result += FORMAT_CHAR + new_char;
+        n = Math.floor((n - (n % 100)) / 1000);
+    }
+
+    return n + result;
+    */
 }
 
 function make_shop_item(item: ICpsUpgrade | IGeneralUpgrade, item_description: string,
@@ -88,8 +113,8 @@ interface ICpsUpgrade {
 }
 
 type ActionType = "multiplier"
-    | "tap_power"
-    | "tap_power_multiplier"
+                | "tap_power"
+                | "tap_power_multiplier"
 
 interface IGeneralUpgrade {
     id: number,
@@ -248,11 +273,12 @@ class Shop {
 
     get_multipliers(): Array<number> {
         const result_array = new Array<number>(this.cps_upgrades.length).fill(1);
+
         for (const i in this.general_upgrades) {
             if (this.upgrades_bought[i] === 0) continue;
             const upgrade = this.general_upgrades[i];
 
-            if (upgrade?.action.type == "multiplier") {
+            if (upgrade?.action.type === "multiplier") {
                 for (const j in upgrade.action.item_ids!) {
                     const id = upgrade.action.item_ids[j]!;
                     result_array[id] *= this.upgrades_bought[id]! * upgrade.action.value;
@@ -292,15 +318,18 @@ class Shop {
 
     buy(item: IGeneralUpgrade) {
         this.upgrades_bought[item.id] += 1;
+
         const button = document.getElementById("item" + item.id) as HTMLButtonElement;
         button.disabled = true;
+
         this.update_shop_element();
         this.update_cps_shop_element();
     }
 
     buy_cps(item: ICpsUpgrade) {
         this.cps_upgrades_bought[item.id] += 1;
-        this.cps_upgrades[item.id]!.cost = Math.floor(this.cps_upgrades[item.id]!.cost * this.cps_cost_multiplier);
+        this.cps_upgrades[item.id]!.cost = Math.floor(
+            this.cps_upgrades[item.id]!.cost * this.cps_cost_multiplier);
         this.update_cps_shop_element();
     }
 
@@ -312,6 +341,7 @@ class Shop {
                 let button = document.getElementById("item" + item.id) as HTMLButtonElement;
                 button.disabled = true;
             }
+
             if (this.upgrades_bought[parseInt(i) - 1]! > 0) {
                 let li = document.getElementById("list_item" + item.id) as HTMLLIElement;
                 li.hidden = false;
@@ -377,8 +407,8 @@ class Cookiezi {
     last_inactive_time = new Date().getTime();
 
     clicks = {
-        is_tapping: false,
         stopped_interval: 0,
+        is_tapping: false,
         tapped: 0,
         ticks: TPS
     }
@@ -404,7 +434,6 @@ class Cookiezi {
     // Buy methods return an action that you can put on a button.
     buy_cps(item: ICpsUpgrade): () => void {
         const self = this;
-        const shop = this.shop;
         return function () {
             if (self.amount < item.cost) {
                 alert("Not enough " + CENT + " to buy \"" + item.name + "\" :(");
@@ -412,7 +441,7 @@ class Cookiezi {
             }
             self.amount -= item.cost;
 
-            shop.buy_cps(item);
+            self.shop.buy_cps(item);
             self.update_cps_shop_element();
 
             self.cps = self.shop.get_cps();
@@ -421,7 +450,6 @@ class Cookiezi {
 
     buy(item: IGeneralUpgrade): () => void {
         const self = this;
-        const shop = this.shop;
         return function () {
             if (self.amount < item.cost) {
                 alert("Not enough " + CENT + " to buy \"" + item.name + "\" :(");
@@ -429,12 +457,12 @@ class Cookiezi {
             }
             self.amount -= item.cost;
 
-            shop.buy(item);
+            self.shop.buy(item);
 
             self.update_shop_element();
 
-            self.power = shop.get_tap_power();
-            self.cps = shop.get_cps();
+            self.power = self.shop.get_tap_power();
+            self.cps = self.shop.get_cps();
         }
     }
 
@@ -478,9 +506,9 @@ class Cookiezi {
     update_elements(): void {
         const speed = this.cps + (this.clicks.tapped * TPS_ADJ / this.clicks.ticks);
 
-        AMOUNT_TEXT_ELEMENT.textContent = Math.floor(this.amount).toString() + CENT;
+        AMOUNT_TEXT_ELEMENT.textContent = format_number(Math.floor(this.amount), 0) + CENT;
+        CPS_TEXT_ELEMENT.textContent = CENT + "/s: " + format_number(speed, 1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
         TAP_POWER_TEXT_ELEMENT.textContent = "Tap power: " + this.power;
-        CPS_TEXT_ELEMENT.textContent = CENT + "/s: " + speed.toFixed(1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
         UPGRADES_COUNT_TEXT_ELEMENT.textContent = "Upgrades bought: " + this.shop.cps_upgrades_bought.reduce((a, b) => a + b, 0);
     }
 
@@ -516,7 +544,7 @@ const cookiezi = new Cookiezi(shop);
 
 cookiezi.initialize_shop();
 
-assert("settings.keys is of KEY_COUNT size", cookiezi.settings.keys.length == KEY_COUNT);
+assert("settings.keys is of KEY_COUNT size", cookiezi.settings.keys.length === KEY_COUNT);
 
 setInterval(() => {
     cookiezi.update();
