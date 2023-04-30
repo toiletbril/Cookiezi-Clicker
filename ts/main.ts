@@ -4,6 +4,12 @@
  *                             */
  ///////////////////////////////
 
+ /*
+TODO:
+  - Move BPM, amount of upgrades in separate element
+  - Cascase style sheet
+ */
+
 const AMOUNT_TEXT_ELEMENT
     = document.getElementById("amount") as HTMLElement;
 const CPS_SHOP_ITEMS_LIST_ELEMENT
@@ -46,9 +52,10 @@ const CHANGE_KEYS_TEXT
 const CHANGING_KEYS_TEXT
     = "Press new a new key..."
 const CURRENT_KEYS_TEXT = (k1: string, k2: string, n: number) =>
-    `Tap ${n <= 0 ? "?" : k1.toUpperCase()}/${n <= 1 ? "?" : k2.toUpperCase()} to gain points.`
+    `Tap ${n <= 0 ? "?" : k1.toUpperCase()}/${n <= 1 ? "?" : k2.toUpperCase()} to gain performance points.`
 
-const CURRENCY = "pp";
+const CURRENCY_TEXT = "pp";
+const TAP_POWER_TEXT = "pp/tap";
 const FORMAT_CHAR = ",";
 
 const CPS_COST_MULTIPLIER = 1.15;
@@ -88,7 +95,7 @@ function make_shop_item(item: ICpsUpgrade | IGeneralUpgrade, item_description: s
     const item_element = document.createElement("li");
     const div = document.createElement("div");
     const p = document.createElement("p");
-    const item_text = document.createTextNode(`${item.name}, ${item.cost}${CURRENCY}`);
+    const item_text = document.createTextNode(`${item.name}, ${item.cost}${CURRENCY_TEXT}`);
     const buy_button = document.createElement("button");
     const desc = document.createTextNode(item_description)
 
@@ -182,7 +189,7 @@ class Shop {
         {
             id: 0,
             name: "Buldak",
-            desc: "Very spicy. +0.6 tap power",
+            desc: `Very spicy. +0.6 ${TAP_POWER_TEXT}`,
             cost: 520,
             action: {
                 type: "tap_power",
@@ -203,7 +210,7 @@ class Shop {
         {
             id: 2,
             name: "Mousepad",
-            desc: "Less mouse drift. +1.2 tap power",
+            desc: `Less mouse drift. +1.2 ${TAP_POWER_TEXT}`,
             cost: 1300,
             action: {
                 type: "tap_power",
@@ -213,7 +220,7 @@ class Shop {
         {
             id: 3,
             name: "Wacom",
-            desc: "+3.2 tap power",
+            desc: `No more mousedrift. +3.2 ${TAP_POWER_TEXT}`,
             cost: 4600,
             action: {
                 type: "tap_power",
@@ -360,13 +367,13 @@ class Shop {
 
             const count = this.cps_upgrades_bought[item.id]!;
             const producing = count > 0
-                ? `| You have ${count}, producing ${(item.gives * count * multipliers[item.id]!).toFixed(1)} ${CURRENCY}/s`
+                ? `| You have ${count}, producing ${(item.gives * count * multipliers[item.id]!).toFixed(1)} ${CURRENCY_TEXT}/s`
                 : "";
 
             button.textContent =
-                `${item.name}, ${item.cost}${CURRENCY}`;
+                `${item.name}, ${item.cost}${CURRENCY_TEXT}`;
             desc.textContent =
-                `+${item.gives * multipliers[item.id]!} ${CURRENCY}/s\n${producing}`;
+                `+${item.gives * multipliers[item.id]!} ${CURRENCY_TEXT}/s\n${producing}`;
 
             if (this.cps_upgrades_bought[parseInt(i) - 1]! > 0) {
                 const li = document.getElementById("list_cps_item" + item.id) as HTMLLIElement;
@@ -418,7 +425,7 @@ class Cookiezi {
     initialize_shop() {
         for (const i in this.shop.cps_upgrades) {
             const item = this.shop.cps_upgrades[i]!;
-            const item_element = make_shop_item(item, `+${item.gives} ${CURRENCY}/s`, "cps_item" + item.id, this.buy_cps(item));
+            const item_element = make_shop_item(item, `+${item.gives} ${CURRENCY_TEXT}/s`, "cps_item" + item.id, this.buy_cps(item));
 
             if (parseInt(i) > 0) item_element.hidden = true;
             CPS_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
@@ -438,7 +445,7 @@ class Cookiezi {
         const self = this;
         return function () {
             if (self.amount < item.cost) {
-                alert("Not enough " + CURRENCY + " to buy \"" + item.name + "\" :(");
+                alert("Not enough " + CURRENCY_TEXT + " to buy \"" + item.name + "\" :(");
                 return;
             }
             self.amount -= item.cost;
@@ -454,7 +461,7 @@ class Cookiezi {
         const self = this;
         return function () {
             if (self.amount < item.cost) {
-                alert("Not enough " + CURRENCY + " to buy \"" + item.name + "\" :(");
+                alert("Not enough " + CURRENCY_TEXT + " to buy \"" + item.name + "\" :(");
                 return;
             }
             self.amount -= item.cost;
@@ -509,13 +516,13 @@ class Cookiezi {
         const speed = this.cps + (this.clicks.tapped * TPS_ADJ / this.clicks.ticks);
 
         AMOUNT_TEXT_ELEMENT.textContent =
-            format_number(Math.floor(this.amount), 0) + CURRENCY;
+            format_number(Math.floor(this.amount), 0) + CURRENCY_TEXT;
         CPS_TEXT_ELEMENT.textContent =
-            CURRENCY + "/s: " + format_number(speed, 1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
+            CURRENCY_TEXT + "/s: " + format_number(speed, 1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
         TAP_POWER_TEXT_ELEMENT.textContent =
-            "Tap power: " + this.power;
+            TAP_POWER_TEXT + ": " + this.power;
         UPGRADES_COUNT_TEXT_ELEMENT.textContent =
-            "Upgrades bought: " + this.shop.cps_upgrades_bought.reduce((a, b) => a + b, 0);
+            "Upgrades: " + this.shop.cps_upgrades_bought.reduce((a, b) => a + b, 0);
     }
 
     update_passive_cps(): void {
