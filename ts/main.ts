@@ -1,14 +1,18 @@
-  //////////////////////////////*
- /*                             *
- *      Cookiezi Clicker =D     *
- *                             */
- ///////////////////////////////
+  //===========================================//
+ /*                                            *
+ *             Cookiezi Clicker =D             *
+ *                     by                      *
+ *             toiletbril@github               *
+ *                                            */
+//===========================================//
 
  /*
 TODO:
-  - Move BPM, amount of upgrades in separate element
+  - Cooler descriptions
   - Cascase style sheet
  */
+
+//===========================================//
 
 const AMOUNT_TEXT_ELEMENT
     = document.getElementById("amount") as HTMLElement;
@@ -29,7 +33,7 @@ const KEYS_TEXT_ELEMENT
 const MAIN_DIV_ELEMENT
     = document.getElementById("main") as HTMLDivElement;
 
-assert("All elements are not null", // dude dynamic languages
+assert("All elements are not null",
     !!AMOUNT_TEXT_ELEMENT &&
     !!CPS_SHOP_ITEMS_LIST_ELEMENT &&
     !!GENERAL_SHOP_ITEMS_LIST_ELEMENT &&
@@ -47,20 +51,23 @@ const TPS = 40;
 const TPS_ADJ = Math.floor(TPS - TPS / 10);
 
 const KEY_COUNT = 2;
+
 const CHANGE_KEYS_TEXT
     = "Change keys..."
 const CHANGING_KEYS_TEXT
     = "Press new a new key..."
 const CURRENT_KEYS_TEXT = (k1: string, k2: string, n: number) =>
-    `Tap ${n <= 0 ? "?" : k1.toUpperCase()}/${n <= 1 ? "?" : k2.toUpperCase()} to gain performance points.`
-
-const CURRENCY_TEXT = "pp";
-const TAP_POWER_TEXT = "pp/tap";
-const FORMAT_CHAR = ",";
+    `Tap ${n <= 0 ? "?" : k1.toUpperCase()}/${n <= 1 ? "?" : k2.toUpperCase()} to gain pp.`
+const CURRENCY_TEXT =
+    "pp";
+const TAP_POWER_TEXT =
+    "pp/tap";
+const FORMAT_CHAR =
+    ",";
 
 const CPS_COST_MULTIPLIER = 1.15;
 
-////////////////////////
+//===========================================//
 
 function assert(desc: string, cond: boolean): void {
     if (!cond) throw new Error("Assertion failed: " + desc);
@@ -90,35 +97,82 @@ function format_number(n: number, fixed: number): string {
     */
 }
 
-function make_shop_item(item: ICpsUpgrade | IGeneralUpgrade, item_description: string,
-    element_id: string, click_action: () => void): HTMLLIElement {
-    const item_element = document.createElement("li");
-    const div = document.createElement("div");
-    const p = document.createElement("p");
-    const item_text = document.createTextNode(`${item.name}, ${item.cost}${CURRENCY_TEXT}`);
-    const buy_button = document.createElement("button");
-    const desc = document.createTextNode(item_description)
+function make_shop_item(item: ICpsUpgrade | IGeneralUpgrade, stat_text: string,
+    item_type: "cps_item" | "item", click_action: () => void): HTMLLIElement {
 
-    p.setAttribute("id", "p" + element_id);
-    buy_button.setAttribute("id", element_id);
-    item_element.setAttribute("id", "list_" + element_id);
+    const item_element =
+        document.createElement("li");
+    const buy_button =
+        document.createElement("button");
+    const div =
+        document.createElement("div");
+    const desc_div =
+        document.createElement("div");
+    const p_desc =
+        document.createElement("p");
+    const p_stat =
+        document.createElement("p");
+
+    const item_text = document.createTextNode
+        (`${item.name}, ${item.cost}${CURRENCY_TEXT}`);
+    const stats = document.createTextNode
+        (stat_text);
+    const desc = document.createTextNode
+        (item.desc);
 
     buy_button.onclick = click_action;
 
+    const id = item_type + item.id;
+
+    // LIST ITEM: list_item1
+    item_element
+        .setAttribute("id", "list_" + id);
+    // BUTTON: button_cps_item0
+    buy_button
+        .setAttribute("id", "button_" + id);
+    // STATS STRING: p_stat_item3
+    p_stat
+        .setAttribute("id", "p_stat_" + id);
+    // DESC STRING: p_cps_item2
+    p_desc
+        .setAttribute("id", "p_" + id);
+    // DIV WITH TEXT: desc_div_item5
+    desc_div
+        .setAttribute("id", "desc_div_" + id);
+    // DIV WITH TEXT: div_item5
+    div
+        .setAttribute("id", "div_" + id);
+
     buy_button.appendChild(item_text);
+
+    p_stat.appendChild(stats);
+    p_desc.appendChild(desc);
+
+    desc_div.appendChild(p_desc);
+    desc_div.appendChild(p_stat);
+
+    if (item_type == "cps_item") {
+        const p_producing = document.createElement("p");
+        // NUMBER OF CPS THAT ITEM IS PRODUING: p_producing_cps_item3
+        p_producing
+            .setAttribute("id", "p_producing_" + id);
+        desc_div.appendChild(p_producing);
+    }
+
     div.appendChild(buy_button);
-    p.appendChild(desc);
-    div.appendChild(p);
+    div.appendChild(desc_div);
+
     item_element.appendChild(div);
 
     return item_element;
 }
 
-////////////////////////
+//===========================================//
 
 interface ICpsUpgrade {
     id: number,
     name: string,
+    desc: string,
     cost: number,
     gives: number
 }
@@ -130,6 +184,7 @@ type ActionType = "multiplier"
 interface IGeneralUpgrade {
     id: number,
     name: string,
+    stat: string,
     desc: string,
     cost: number,
     action: {
@@ -149,37 +204,42 @@ interface ISettings {
     is_changing_keys: number
 }
 
-////////////////////////
+//===========================================//
 
 class Shop {
     cps_upgrades: ICpsUpgrade[] = [
         {
             id: 0,
-            name: "Logitech",
+            name: "Left click",
+            desc: "Item description =D",
             cost: 80,
             gives: 0.4,
         },
         {
             id: 1,
-            name: "Left click",
+            name: "Logitech",
+            desc: "Item description =D",
             cost: 340,
             gives: 1,
         },
         {
             id: 2,
             name: "A drill",
+            desc: "Item description =D",
             cost: 1860,
             gives: 4,
         },
         {
             id: 3,
             name: "Vaxei",
+            desc: "Item description =D",
             cost: 8420,
             gives: 10,
         },
         {
             id: 4,
             name: "Cookiezi",
+            desc: "Item description =D",
             cost: 44500,
             gives: 50,
         }
@@ -189,7 +249,8 @@ class Shop {
         {
             id: 0,
             name: "Buldak",
-            desc: `Very spicy. +0.6 ${TAP_POWER_TEXT}`,
+            desc: "Very spicy.",
+            stat: `+0.6 ${TAP_POWER_TEXT}`,
             cost: 520,
             action: {
                 type: "tap_power",
@@ -199,7 +260,8 @@ class Shop {
         {
             id: 1,
             name: "Better wire",
-            desc: "Logitech is twice more effective.",
+            desc: "You buy a better wire.",
+            stat: "Logitech is twice more effective.",
             cost: 840,
             action: {
                 type: "multiplier",
@@ -210,7 +272,8 @@ class Shop {
         {
             id: 2,
             name: "Mousepad",
-            desc: `Less mouse drift. +1.2 ${TAP_POWER_TEXT}`,
+            desc: "Less mouse drift.",
+            stat: `+1.2 ${TAP_POWER_TEXT}`,
             cost: 1300,
             action: {
                 type: "tap_power",
@@ -220,7 +283,8 @@ class Shop {
         {
             id: 3,
             name: "Wacom",
-            desc: `No more mousedrift. +3.2 ${TAP_POWER_TEXT}`,
+            desc: "Item description =D",
+            stat: `+3.2 ${TAP_POWER_TEXT}`,
             cost: 4600,
             action: {
                 type: "tap_power",
@@ -230,7 +294,8 @@ class Shop {
         {
             id: 4,
             name: "Power outlet",
-            desc: "Left click and drill become twice as effective.",
+            desc: "Industrial revolution.",
+            stat: "Left click and drill become twice as effective.",
             cost: 10640,
             action: {
                 type: "multiplier",
@@ -241,7 +306,8 @@ class Shop {
         {
             id: 5,
             name: "Sugar",
-            desc: "Vaxei becomes twice as effective.",
+            desc: "Item description =D",
+            stat: "Vaxei becomes twice as effective.",
             cost: 18900,
             action: {
                 type: "multiplier",
@@ -252,7 +318,8 @@ class Shop {
         {
             id: 6,
             name: "Tablet cover",
-            desc: "Click power is doubled.",
+            desc: "Item description =D",
+            stat: "Click power is doubled.",
             cost: 23200,
             action: {
                 type: "tap_power_multiplier",
@@ -262,7 +329,8 @@ class Shop {
         {
             id: 7,
             name: "Cookiezi comeback",
-            desc: "Cookiezi becomes twice as effective.",
+            desc: "Item description =D",
+            stat: "Cookiezi becomes twice as effective.",
             cost: 69420,
             action: {
                 type: "multiplier",
@@ -301,8 +369,8 @@ class Shop {
         const multipliers = this.get_multipliers()!;
         assert("multipliers is valid length", multipliers.length === this.cps_upgrades.length);
         return this.cps_upgrades_bought
-            .map((a, i) => a * multipliers[i]! * this.cps_upgrades[i]!.gives)
-            .reduce((a, b) => a + b);
+                .map((a, i) => a * this.cps_upgrades[i]!.gives * multipliers[i]!)
+                .reduce((a, b) => a + b);
     }
 
     get_tap_power() {
@@ -328,7 +396,7 @@ class Shop {
     buy(item: IGeneralUpgrade) {
         this.upgrades_bought[item.id] += 1;
 
-        const button = document.getElementById("item" + item.id) as HTMLButtonElement;
+        const button = document.getElementById("button_item" + item.id) as HTMLButtonElement;
         button.disabled = true;
 
         this.update_shop_element();
@@ -345,11 +413,15 @@ class Shop {
         for (const i in this.upgrades_bought) {
             const item = this.general_upgrades[i]!;
 
+            // Disable the button if you bought that upgrade
             if (this.upgrades_bought[i]! > 0) {
-                const button = document.getElementById("item" + item.id) as HTMLButtonElement;
+                const button = document
+                    .getElementById("button_item" + item.id) as HTMLButtonElement;
+
                 button.disabled = true;
             }
 
+            // Enable the next item if you bought the previous one.
             if (this.upgrades_bought[parseInt(i) - 1]! > 0) {
                 const li = document.getElementById("list_item" + item.id) as HTMLLIElement;
                 li.hidden = false;
@@ -362,21 +434,32 @@ class Shop {
         for (const i in this.cps_upgrades_bought) {
             const item = this.cps_upgrades[i]!;
 
-            const button = document.getElementById("cps_item" + item.id) as HTMLButtonElement;
-            const desc = document.getElementById("pcps_item" + item.id) as HTMLParagraphElement;
+            const button = document
+                .getElementById("button_cps_item" + item.id) as HTMLButtonElement;
+            const stat = document
+                .getElementById("p_stat_cps_item" + item.id) as HTMLParagraphElement;
 
             const count = this.cps_upgrades_bought[item.id]!;
-            const producing = count > 0
-                ? `| You have ${count}, producing ${(item.gives * count * multipliers[item.id]!).toFixed(1)} ${CURRENCY_TEXT}/s`
-                : "";
 
             button.textContent =
-                `${item.name}, ${item.cost}${CURRENCY_TEXT}`;
-            desc.textContent =
-                `+${item.gives * multipliers[item.id]!} ${CURRENCY_TEXT}/s\n${producing}`;
+            `${item.name}, ${item.cost}${CURRENCY_TEXT}`;
+            stat.textContent =
+            `+${item.gives * multipliers[item.id]!} ${CURRENCY_TEXT}/s`;
 
+            // NOTE: this is temporary
+            if (count > 0) {
+                const producing = document
+                    .getElementById("p_producing_cps_item" + item.id) as HTMLParagraphElement;
+                const producing_text =
+                    `You have ${count}, producing ${(item.gives * count * multipliers[item.id]!).toFixed(1)} ${CURRENCY_TEXT}/s`;
+                producing.textContent = producing_text;
+            }
+
+            // Enable the next item if *you bought the previous one*
+            // NOTE: there should be more general way to have different type of conditions for this to happen
             if (this.cps_upgrades_bought[parseInt(i) - 1]! > 0) {
-                const li = document.getElementById("list_cps_item" + item.id) as HTMLLIElement;
+                const li = document
+                    .getElementById("list_cps_item" + item.id) as HTMLLIElement;
                 li.hidden = false;
             }
         }
@@ -411,9 +494,11 @@ class Cookiezi {
             ],
             is_changing_keys: -1
         }
+
+        assert("settings.keys is of KEY_COUNT size", this.settings.keys.length === KEY_COUNT);
     }
 
-    last_inactive_time = new Date().getTime();
+    last_inactive_time = 0;
 
     clicks = {
         stopped_interval: 0,
@@ -425,7 +510,7 @@ class Cookiezi {
     initialize_shop() {
         for (const i in this.shop.cps_upgrades) {
             const item = this.shop.cps_upgrades[i]!;
-            const item_element = make_shop_item(item, `+${item.gives} ${CURRENCY_TEXT}/s`, "cps_item" + item.id, this.buy_cps(item));
+            const item_element = make_shop_item(item, `+${item.gives} ${CURRENCY_TEXT}/s`, "cps_item", this.buy_cps(item));
 
             if (parseInt(i) > 0) item_element.hidden = true;
             CPS_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
@@ -433,7 +518,7 @@ class Cookiezi {
 
         for (const i in this.shop.general_upgrades) {
             const item = this.shop.general_upgrades[i]!;
-            const item_element = make_shop_item(item, item.desc, "item" + item.id, this.buy(item));
+            const item_element = make_shop_item(item, item.stat, "item", this.buy(item));
 
             if (parseInt(i) > 0) item_element.hidden = true;
             GENERAL_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
@@ -451,7 +536,7 @@ class Cookiezi {
             self.amount -= item.cost;
 
             self.shop.buy_cps(item);
-            self.update_cps_shop_element();
+            self.shop.update_cps_shop_element();
 
             self.cps = self.shop.get_cps();
         }
@@ -467,20 +552,11 @@ class Cookiezi {
             self.amount -= item.cost;
 
             self.shop.buy(item);
-
-            self.update_shop_element();
+            self.shop.update_shop_element();
 
             self.power = self.shop.get_tap_power();
             self.cps = self.shop.get_cps();
         }
-    }
-
-    update_cps_shop_element(): void {
-        this.shop.update_cps_shop_element();
-    }
-
-    update_shop_element(): void {
-        this.shop.update_shop_element();
     }
 
     // This is to avoid clicking when holding button down.
@@ -512,7 +588,7 @@ class Cookiezi {
         this.amount += this.cps / TPS;
     }
 
-    update_elements(): void {
+    update_main_elements(): void {
         const speed = this.cps + (this.clicks.tapped * TPS_ADJ / this.clicks.ticks);
 
         AMOUNT_TEXT_ELEMENT.textContent =
@@ -522,7 +598,7 @@ class Cookiezi {
         TAP_POWER_TEXT_ELEMENT.textContent =
             TAP_POWER_TEXT + ": " + this.power;
         UPGRADES_COUNT_TEXT_ELEMENT.textContent =
-            "Upgrades: " + this.shop.cps_upgrades_bought.reduce((a, b) => a + b, 0);
+            "Items bought: " + this.shop.cps_upgrades_bought.reduce((a, b) => a + b, 0);
     }
 
     update_passive_cps(): void {
@@ -534,7 +610,7 @@ class Cookiezi {
             this.clicks.ticks += 1;
         } else if (this.clicks.ticks != TPS) {
             // NOTE:
-            // TPS should be the beginning value instead of 0, because CP/s is being calculated as:
+            // TPS is the starting value instead of 0, because CP/s is being calculated as:
             // TOTAL_TAPPED * TPS / TICKS -> TOTAL_TAPPED / SECONDS_PASSED
             this.clicks.tapped = Math.floor(this.clicks.tapped / this.clicks.ticks * TPS_ADJ);
             this.clicks.ticks = TPS;
@@ -546,18 +622,16 @@ class Cookiezi {
     update(): void {
         this.invoke_cps();
         this.update_cps();
-        this.update_elements();
+        this.update_main_elements();
     }
 }
 
-////////////////////////
+//===========================================//
 
 const shop: Shop = new Shop();
 const cookiezi: Cookiezi = new Cookiezi(shop);
 
 cookiezi.initialize_shop();
-
-assert("settings.keys is of KEY_COUNT size", cookiezi.settings.keys.length === KEY_COUNT);
 
 setInterval(() => {
     cookiezi.update();
@@ -604,14 +678,14 @@ document.addEventListener("keyup", (k) => {
     }
 });
 
-CHANGE_KEYS_BUTTON_ELEMENT.onclick = (() => {
+CHANGE_KEYS_BUTTON_ELEMENT.onclick = () => {
     const k1 = cookiezi.settings.keys[0]!;
     const k2 = cookiezi.settings.keys[1]!;
 
     cookiezi.settings.is_changing_keys = 0;
     KEYS_TEXT_ELEMENT.textContent = CURRENT_KEYS_TEXT(k1.key, k2.key, cookiezi.settings.is_changing_keys);
     CHANGE_KEYS_BUTTON_ELEMENT.textContent = CHANGING_KEYS_TEXT;
-});
+}
 
 // Invoke CP/s even when tab is inactive
 window.onfocus = () => {
@@ -625,3 +699,5 @@ window.onfocus = () => {
 window.onblur = () => {
     cookiezi.last_inactive_time = new Date().getTime();
 }
+
+//===========================================//
