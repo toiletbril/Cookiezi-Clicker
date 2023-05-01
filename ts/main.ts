@@ -32,6 +32,8 @@ const KEYS_TEXT_ELEMENT
     = document.getElementById("keys") as HTMLButtonElement;
 const MAIN_DIV_ELEMENT
     = document.getElementById("main") as HTMLDivElement;
+const BPM_TEXT_ELEMENT
+    = document.getElementById("bpm") as HTMLHeadingElement;
 
 assert("All elements are not null",
     !!AMOUNT_TEXT_ELEMENT &&
@@ -42,20 +44,21 @@ assert("All elements are not null",
     !!UPGRADES_COUNT_TEXT_ELEMENT &&
     !!CHANGE_KEYS_BUTTON_ELEMENT &&
     !!KEYS_TEXT_ELEMENT &&
+    !!BPM_TEXT_ELEMENT &&
     !!MAIN_DIV_ELEMENT
 );
 
 const TPS = 40;
 
 // This is here to account for setTimeout's delays ;(
-const TPS_ADJ = Math.floor(TPS - TPS / 10);
+const TPS_ADJ = Math.floor(TPS - TPS / 11);
 
 const KEY_COUNT = 2;
 
 const CHANGE_KEYS_TEXT
     = "Change keys..."
 const CHANGING_KEYS_TEXT
-    = "Press new a new key..."
+    = "Press a new key..."
 const CURRENCY_TEXT =
     "pp";
 const TAP_POWER_TEXT =
@@ -211,8 +214,8 @@ class Shop {
     cps_upgrades: ICpsUpgrade[] = [
         {
             id: 0,
-            name: "Z button",
-            desc: "Item description =D",
+            name: "Keyboard macro",
+            desc: "Flimsy macro on an old keyboard.",
             cost: 80,
             gives: 0.4,
         },
@@ -226,7 +229,7 @@ class Shop {
         {
             id: 2,
             name: "A drill",
-            desc: "Item description =D",
+            desc: "Drill, usually fitted with a driving tool attachment, now fitted with a keyboard.",
             cost: 1860,
             gives: 4,
         },
@@ -250,7 +253,7 @@ class Shop {
         {
             id: 0,
             name: "Buldak",
-            desc: "Very spicy.",
+            desc: "You start to sweat.",
             stat: `+0.6 ${TAP_POWER_TEXT}`,
             cost: 520,
             action: {
@@ -260,9 +263,9 @@ class Shop {
         },
         {
             id: 1,
-            name: "RSI medication",
-            desc: "You buy a RSI medication.",
-            stat: "\"Z button\" is twice more effective.",
+            name: "Gateron switch",
+            desc: "You order some switches.",
+            stat: "Keyboard button is twice more effective.",
             cost: 840,
             action: {
                 type: "multiplier",
@@ -273,7 +276,7 @@ class Shop {
         {
             id: 2,
             name: "Mousepad",
-            desc: "Less mouse drift.",
+            desc: "Finally, less mouse drift.",
             stat: `+1.2 ${TAP_POWER_TEXT}`,
             cost: 1300,
             action: {
@@ -295,8 +298,8 @@ class Shop {
         {
             id: 4,
             name: "Power outlet",
-            desc: "Industrial revolution.",
-            stat: "Left click and drill become twice as effective.",
+            desc: "The consequences of industrial revolution.",
+            stat: "Keyboard buttons and drills become twice as effective.",
             cost: 10640,
             action: {
                 type: "multiplier",
@@ -318,8 +321,8 @@ class Shop {
         },
         {
             id: 6,
-            name: "Tablet cover",
-            desc: "Item description =D",
+            name: "Wooting",
+            desc: "You finally receive your Wooting.",
             stat: "Click power is doubled.",
             cost: 23200,
             action: {
@@ -330,7 +333,7 @@ class Shop {
         {
             id: 7,
             name: "Cookiezi comeback",
-            desc: "Item description =D",
+            desc: "Chocomint's Made of Fire HDDT 98.54 full combo. Without a doubt, one of the most impressive plays ever set in osu! history, but one that takes some experience to appreciate fully.",
             stat: "Cookiezi becomes twice as effective.",
             cost: 69420,
             action: {
@@ -590,12 +593,15 @@ class Cookiezi {
     }
 
     update_main_elements(): void {
-        const speed = this.cps + (this.clicks.tapped * TPS_ADJ / this.clicks.ticks);
+        const speed = (this.clicks.tapped * TPS_ADJ / this.clicks.ticks);
 
+        // TODO: This doesn't calculate properly.
+        BPM_TEXT_ELEMENT.textContent =
+            Math.floor(speed * 60 / 4) + " BPM";
         AMOUNT_TEXT_ELEMENT.textContent =
             format_number(Math.floor(this.amount), 0) + CURRENCY_TEXT;
         CPS_TEXT_ELEMENT.textContent =
-            CURRENCY_TEXT + "/s: " + format_number(speed, 1) + " (" + Math.floor(speed * 60 / 4) + " BPM)";
+            CURRENCY_TEXT + "/s: " + format_number(this.cps + speed, 1);
         TAP_POWER_TEXT_ELEMENT.textContent =
             TAP_POWER_TEXT + ": " + this.power;
         UPGRADES_COUNT_TEXT_ELEMENT.textContent =
