@@ -1,8 +1,8 @@
   //===========================================//
  /*                                            *
- *             Cookiezi Clicker =D             *
+ *             Cookiezi Clicker :3             *
  *                     by                      *
- *             toiletbril@github               *
+ *              toiletbril@github              *
  *                                            */
 //===========================================//
 
@@ -56,8 +56,6 @@ const CHANGE_KEYS_TEXT
     = "Change keys..."
 const CHANGING_KEYS_TEXT
     = "Press new a new key..."
-const CURRENT_KEYS_TEXT = (k1: string, k2: string, n: number) =>
-    `Tap ${n <= 0 ? "?" : k1.toUpperCase()}/${n <= 1 ? "?" : k2.toUpperCase()} to gain pp.`
 const CURRENCY_TEXT =
     "pp";
 const TAP_POWER_TEXT =
@@ -72,6 +70,9 @@ const CPS_COST_MULTIPLIER = 1.15;
 function assert(desc: string, cond: boolean): void {
     if (!cond) throw new Error("Assertion failed: " + desc);
 }
+
+const make_current_keys_text = (k1: string, k2: string, n: number) =>
+    `Tap ${n <= 0 ? "?" : k1.toUpperCase()}/${n <= 1 ? "?" : k2.toUpperCase()} to gain pp.`
 
 // 1000000 -> 1,000,000
 function format_number(n: number, fixed: number): string {
@@ -210,7 +211,7 @@ class Shop {
     cps_upgrades: ICpsUpgrade[] = [
         {
             id: 0,
-            name: "Left click",
+            name: "Z button",
             desc: "Item description =D",
             cost: 80,
             gives: 0.4,
@@ -259,9 +260,9 @@ class Shop {
         },
         {
             id: 1,
-            name: "Better wire",
-            desc: "You buy a better wire.",
-            stat: "Logitech is twice more effective.",
+            name: "RSI medication",
+            desc: "You buy a RSI medication.",
+            stat: "\"Z button\" is twice more effective.",
             cost: 840,
             action: {
                 type: "multiplier",
@@ -645,7 +646,7 @@ document.addEventListener("keydown", (k) => {
         cookiezi.settings.keys[cookiezi.settings.is_changing_keys]!.key = k.key;
 
         cookiezi.settings.is_changing_keys += 1;
-        KEYS_TEXT_ELEMENT.textContent = CURRENT_KEYS_TEXT(k1.key, k2.key, cookiezi.settings.is_changing_keys);
+        KEYS_TEXT_ELEMENT.textContent = make_current_keys_text(k1.key, k2.key, cookiezi.settings.is_changing_keys);
 
         if (cookiezi.settings.is_changing_keys >= KEY_COUNT) {
             cookiezi.settings.is_changing_keys = -1;
@@ -683,7 +684,7 @@ CHANGE_KEYS_BUTTON_ELEMENT.onclick = () => {
     const k2 = cookiezi.settings.keys[1]!;
 
     cookiezi.settings.is_changing_keys = 0;
-    KEYS_TEXT_ELEMENT.textContent = CURRENT_KEYS_TEXT(k1.key, k2.key, cookiezi.settings.is_changing_keys);
+    KEYS_TEXT_ELEMENT.textContent = make_current_keys_text(k1.key, k2.key, cookiezi.settings.is_changing_keys);
     CHANGE_KEYS_BUTTON_ELEMENT.textContent = CHANGING_KEYS_TEXT;
 }
 
