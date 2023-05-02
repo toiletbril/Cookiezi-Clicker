@@ -74,31 +74,14 @@ function assert(desc: string, cond: boolean): void {
     if (!cond) throw new Error("Assertion failed: " + desc);
 }
 
-const make_current_keys_text = (k1: string, k2: string, n: number) =>
-    `Tap ${n <= 0 ? "?" : k1.toUpperCase()}/${n <= 1 ? "?" : k2.toUpperCase()} to gain pp.`
+function make_current_keys_text(k1: string, k2: string, n: number): string {
+    return `Tap ${n <= 0 ? "?" : k1.toUpperCase()}/${n <= 1 ? "?" : k2.toUpperCase()} to gain pp.`;
+}
 
 // 1000000 -> 1,000,000
 function format_number(n: number, fixed: number): string {
-    // Regex version
+    // Regex version is better :3
     return n.toFixed(fixed).replace(/\B(?=(\d{3})+(?!\d))/g, FORMAT_CHAR);
-
-    // NOTE: normal version, breaks with very large numbers
-    /*
-    if (n < 1000) return n.toString();
-    let result = "";
-
-    while (n > 999) {
-        let c = n % 1000;
-        let new_char = c < 10 ? "00" + c
-                     : c < 100 ? "0" + c
-                     : c
-
-        result += FORMAT_CHAR + new_char;
-        n = Math.floor((n - (n % 100)) / 1000);
-    }
-
-    return n + result;
-    */
 }
 
 function make_shop_item(item: ICpsUpgrade | IGeneralUpgrade, stat_text: string,
@@ -215,7 +198,7 @@ class Shop {
         {
             id: 0,
             name: "Keyboard macro",
-            desc: "Flimsy macro on an old keyboard.",
+            desc: "A macro on an old keyboard.",
             cost: 80,
             gives: 0.4,
         },
@@ -223,28 +206,28 @@ class Shop {
             id: 1,
             name: "Logitech",
             desc: "Item description =D",
-            cost: 340,
+            cost: 440,
             gives: 1,
         },
         {
             id: 2,
             name: "A drill",
             desc: "Drill, usually fitted with a driving tool attachment, now fitted with a keyboard.",
-            cost: 1860,
+            cost: 1960,
             gives: 4,
         },
         {
             id: 3,
             name: "Vaxei",
             desc: "Item description =D",
-            cost: 8420,
+            cost: 9420,
             gives: 10,
         },
         {
             id: 4,
             name: "Cookiezi",
             desc: "Item description =D",
-            cost: 44500,
+            cost: 54500,
             gives: 50,
         }
     ]
@@ -266,7 +249,7 @@ class Shop {
             name: "Gateron switch",
             desc: "You order some switches.",
             stat: "Keyboard button is twice more effective.",
-            cost: 840,
+            cost: 1340,
             action: {
                 type: "multiplier",
                 item_ids: [0],
@@ -278,7 +261,7 @@ class Shop {
             name: "Mousepad",
             desc: "Finally, less mouse drift.",
             stat: `+1.2 ${TAP_POWER_TEXT}`,
-            cost: 1300,
+            cost: 1800,
             action: {
                 type: "tap_power",
                 value: 1.2
@@ -355,7 +338,8 @@ class Shop {
     get_multipliers(): Array<number> {
         const result_array = new Array<number>(this.cps_upgrades.length).fill(1);
 
-        for (const i in this.general_upgrades) {
+        for (const s in this.general_upgrades) {
+            const i = parseInt(s, 10);
             if (this.upgrades_bought[i] === 0) continue;
             const upgrade = this.general_upgrades[i];
 
@@ -381,7 +365,8 @@ class Shop {
         let result = 1;
         let multiplier = 1;
 
-        for (const i in this.upgrades_bought) {
+        for (const s in this.upgrades_bought) {
+            const i = parseInt(s, 10);
             if (this.upgrades_bought[i] === 0) continue;
             const upgrade = this.general_upgrades[i];
 
@@ -414,10 +399,11 @@ class Shop {
     }
 
     update_shop_element() {
-        for (const i in this.upgrades_bought) {
+        for (const s in this.upgrades_bought) {
+            const i = parseInt(s, 10);
             const item = this.general_upgrades[i]!;
 
-            // Disable the button if you bought that upgrade
+            // Disable the button if you bought that upgrade.
             if (this.upgrades_bought[i]! > 0) {
                 const button = document
                     .getElementById("button_item" + item.id) as HTMLButtonElement;
@@ -426,7 +412,7 @@ class Shop {
             }
 
             // Enable the next item if you bought the previous one.
-            if (this.upgrades_bought[parseInt(i) - 1]! > 0) {
+            if (this.upgrades_bought[i - 1]! > 0) {
                 const li = document.getElementById("list_item" + item.id) as HTMLLIElement;
                 li.hidden = false;
             }
@@ -435,7 +421,8 @@ class Shop {
 
     update_cps_shop_element() {
         const multipliers = this.get_multipliers();
-        for (const i in this.cps_upgrades_bought) {
+        for (const s in this.cps_upgrades_bought) {
+            const i = parseInt(s, 10);
             const item = this.cps_upgrades[i]!;
 
             const button = document
@@ -446,7 +433,7 @@ class Shop {
             const count = this.cps_upgrades_bought[item.id]!;
 
             button.textContent =
-            `${item.name}, ${item.cost}${CURRENCY_TEXT}`;
+            `${item.name}, ${format_number(item.cost, 0)}${CURRENCY_TEXT}`;
             stat.textContent =
             `+${item.gives * multipliers[item.id]!} ${CURRENCY_TEXT}/s`;
 
@@ -455,13 +442,13 @@ class Shop {
                 const producing = document
                     .getElementById("p_producing_cps_item" + item.id) as HTMLParagraphElement;
                 const producing_text =
-                    `You have ${count}, producing ${(item.gives * count * multipliers[item.id]!).toFixed(1)} ${CURRENCY_TEXT}/s`;
+                    `You have ${count}, producing ${format_number(item.gives * count * multipliers[item.id]!, 1)} ${CURRENCY_TEXT}/s`;
                 producing.textContent = producing_text;
             }
 
             // Enable the next item if *you bought the previous one*
             // NOTE: there should be more general way to have different type of conditions for this to happen
-            if (this.cps_upgrades_bought[parseInt(i) - 1]! > 0) {
+            if (this.cps_upgrades_bought[i - 1]! > 0) {
                 const li = document
                     .getElementById("list_cps_item" + item.id) as HTMLLIElement;
                 li.hidden = false;
@@ -512,19 +499,21 @@ class Cookiezi {
     }
 
     initialize_shop() {
-        for (const i in this.shop.cps_upgrades) {
+        for (const s in this.shop.cps_upgrades) {
+            const i = parseInt(s, 10);
             const item = this.shop.cps_upgrades[i]!;
             const item_element = make_shop_item(item, `+${item.gives} ${CURRENCY_TEXT}/s`, "cps_item", this.buy_cps(item));
 
-            if (parseInt(i) > 0) item_element.hidden = true;
+            if (i > 0) item_element.hidden = true;
             CPS_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
         }
 
-        for (const i in this.shop.general_upgrades) {
+        for (const s in this.shop.general_upgrades) {
+            const i = parseInt(s, 10);
             const item = this.shop.general_upgrades[i]!;
             const item_element = make_shop_item(item, item.stat, "item", this.buy(item));
 
-            if (parseInt(i) > 0) item_element.hidden = true;
+            if (i > 0) item_element.hidden = true;
             GENERAL_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
         }
     }
@@ -706,5 +695,3 @@ window.onfocus = () => {
 window.onblur = () => {
     cookiezi.last_inactive_time = new Date().getTime();
 }
-
-//===========================================//
