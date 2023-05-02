@@ -8,7 +8,7 @@
 
  /*
 TODO:
-  - Cooler descriptions
+  - Optimizations and cleanup
   - Cascase style sheet
  */
 
@@ -84,7 +84,7 @@ function format_number(n: number, fixed: number): string {
     return n.toFixed(fixed).replace(/\B(?=(\d{3})+(?!\d))/g, FORMAT_CHAR);
 }
 
-function make_shop_item(item: ICpsUpgrade | IGeneralUpgrade, stat_text: string,
+function make_shop_item(item: CpsUpgrade | GeneralUpgrade, stat_text: string,
     item_type: "cps_item" | "item", click_action: () => void): HTMLLIElement {
 
     const item_element =
@@ -156,19 +156,33 @@ function make_shop_item(item: ICpsUpgrade | IGeneralUpgrade, stat_text: string,
 
 //===========================================//
 
-interface ICpsUpgrade {
+type ActionType = "multiplier"
+                | "tap_power"
+                | "tap_power_multiplier";
+
+type ShowConditionType = "has_upgrade"
+                       | "has_cps_upgrade"
+                       | "has_cps"
+                       | "has_current_pp"
+                       | "total_pp"
+                       | "has_pps";
+
+type ShowCondition = {
+    type: ShowConditionType,
+    value: number,
+    amount?: number;
+}
+
+type CpsUpgrade = {
     id: number,
     name: string,
     desc: string,
     cost: number,
-    gives: number
+    gives: number,
+    show_conditions?: ShowCondition[]
 }
 
-type ActionType = "multiplier"
-                | "tap_power"
-                | "tap_power_multiplier"
-
-interface IGeneralUpgrade {
+type GeneralUpgrade = {
     id: number,
     name: string,
     stat: string,
@@ -178,29 +192,30 @@ interface IGeneralUpgrade {
         type: ActionType,
         value: number,
         item_ids?: number[]
-    }
+    },
+    show_conditions?: ShowCondition[]
 }
 
-interface IKey {
+type Key = {
     key: string,
     is_down: boolean
 }
 
-interface ISettings {
-    keys: IKey[],
+type Settings = {
+    keys: Key[],
     is_changing_keys: number
 }
 
 //===========================================//
 
 class Shop {
-    cps_upgrades: ICpsUpgrade[] = [
+    cps_upgrades: CpsUpgrade[] = [
         {
             id: 0,
-            name: "Keyboard macro",
-            desc: "A macro on an old keyboard.",
+            name: "Keyboard button",
+            desc: "A button on an old keyboard.",
             cost: 80,
-            gives: 0.4,
+            gives: 0.4
         },
         {
             id: 1,
@@ -208,6 +223,12 @@ class Shop {
             desc: "Item description =D",
             cost: 440,
             gives: 1,
+            show_conditions: [
+                {
+                    type: "has_cps_upgrade",
+                    value: 0
+                }
+            ]
         },
         {
             id: 2,
@@ -215,6 +236,13 @@ class Shop {
             desc: "Drill, usually fitted with a driving tool attachment, now fitted with a keyboard.",
             cost: 1960,
             gives: 4,
+            show_conditions: [
+                {
+                    type: "has_cps_upgrade",
+                    value: 1,
+                    amount: 2
+                }
+            ]
         },
         {
             id: 3,
@@ -222,20 +250,34 @@ class Shop {
             desc: "Item description =D",
             cost: 9420,
             gives: 10,
+            show_conditions: [
+                {
+                    type: "has_cps_upgrade",
+                    value: 2,
+                    amount: 3
+                }
+            ]
         },
         {
             id: 4,
             name: "Cookiezi",
             desc: "Item description =D",
-            cost: 54500,
-            gives: 50,
+            cost: 74500,
+            gives: 55,
+            show_conditions: [
+                {
+                    type: "has_cps_upgrade",
+                    value: 3,
+                    amount: 5
+                }
+            ]
         }
     ]
 
-    general_upgrades: IGeneralUpgrade[] = [
+    general_upgrades: GeneralUpgrade[] = [
         {
             id: 0,
-            name: "Buldak",
+            name: "Spicy ramen",
             desc: "You start to sweat.",
             stat: `+0.6 ${TAP_POWER_TEXT}`,
             cost: 520,
@@ -246,15 +288,22 @@ class Shop {
         },
         {
             id: 1,
-            name: "Gateron switch",
+            name: "Bateron switch",
             desc: "You order some switches.",
-            stat: "Keyboard button is twice more effective.",
+            stat: "Keyboard buttons are thrice more effective.",
             cost: 1340,
             action: {
                 type: "multiplier",
                 item_ids: [0],
-                value: 2
-            }
+                value: 3
+            },
+            show_conditions: [
+                {
+                    type: "has_cps_upgrade",
+                    value: 0,
+                    amount: 5
+                }
+            ]
         },
         {
             id: 2,
@@ -265,53 +314,94 @@ class Shop {
             action: {
                 type: "tap_power",
                 value: 1.2
-            }
+            },
+            show_conditions: [
+                {
+                    type: "has_upgrade",
+                    value: 0
+                },
+                {
+                    type: "has_pps",
+                    value: 10
+                }
+            ]
         },
         {
             id: 3,
-            name: "Wacom",
-            desc: "Item description =D",
+            name: "Vacom toilet",
+            desc: "10 Reasons Why You Might Want a High-Tech Super Toilet",
             stat: `+3.2 ${TAP_POWER_TEXT}`,
             cost: 4600,
             action: {
                 type: "tap_power",
                 value: 3.2
-            }
+            },
+            show_conditions: [
+                {
+                    type: "has_upgrade",
+                    value: 2
+                }
+            ]
         },
         {
             id: 4,
             name: "Power outlet",
             desc: "The consequences of industrial revolution.",
-            stat: "Keyboard buttons and drills become twice as effective.",
+            stat: "Logitech and drill become twice as effective.",
             cost: 10640,
             action: {
                 type: "multiplier",
                 item_ids: [1, 2],
                 value: 2
-            }
+            },
+            show_conditions: [
+                {
+                    type: "has_cps_upgrade",
+                    value: 1,
+                    amount: 4
+                },
+                {
+                    type: "has_cps_upgrade",
+                    value: 2,
+                    amount: 2
+                }
+            ]
         },
         {
             id: 5,
             name: "Sugar",
-            desc: "Item description =D",
+            desc: "The generic name for sweet-tasting, soluble carbohydrates, many of which are used in food.",
             stat: "Vaxei becomes twice as effective.",
             cost: 18900,
             action: {
                 type: "multiplier",
                 item_ids: [3],
                 value: 2
-            }
+            },
+            show_conditions: [
+                {
+                    type: "has_upgrade",
+                    value: 4,
+                    amount: 4
+                }
+            ]
         },
         {
             id: 6,
-            name: "Wooting",
-            desc: "You finally receive your Wooting.",
+            name: "Mooting",
+            desc: "You finally receive your Mooting keyboard.",
             stat: "Click power is doubled.",
             cost: 23200,
             action: {
                 type: "tap_power_multiplier",
                 value: 2
-            }
+            },
+            show_conditions: [
+                {
+                    type: "has_upgrade",
+                    value: 5
+                }
+            ]
         },
         {
             id: 7,
@@ -323,7 +413,14 @@ class Shop {
                 type: "multiplier",
                 item_ids: [4],
                 value: 2
-            }
+            },
+            show_conditions: [
+                {
+                    type: "has_upgrade",
+                    value: 6,
+                    amount: 3
+                }
+            ]
         }
     ]
 
@@ -341,19 +438,19 @@ class Shop {
         for (const s in this.general_upgrades) {
             const i = parseInt(s, 10);
             if (this.upgrades_bought[i] === 0) continue;
-            const upgrade = this.general_upgrades[i];
+            const upgrade = this.general_upgrades[i]!;
 
-            if (upgrade?.action.type === "multiplier") {
+            if (upgrade.action.type === "multiplier") {
                 for (const j in upgrade.action.item_ids!) {
                     const id = upgrade.action.item_ids[j]!;
-                    result_array[id] *= this.upgrades_bought[id]! * upgrade.action.value;
+                    result_array[id] *= this.upgrades_bought[upgrade.id]! * upgrade.action.value;
                 }
             }
         }
         return result_array;
     }
 
-    get_cps() {
+    calc_cps(): number {
         const multipliers = this.get_multipliers()!;
         assert("multipliers is valid length", multipliers.length === this.cps_upgrades.length);
         return this.cps_upgrades_bought
@@ -361,7 +458,7 @@ class Shop {
                 .reduce((a, b) => a + b);
     }
 
-    get_tap_power() {
+    calc_tap_power(): number {
         let result = 1;
         let multiplier = 1;
 
@@ -382,91 +479,32 @@ class Shop {
         return result * multiplier;
     }
 
-    buy(item: IGeneralUpgrade) {
+    buy(item: GeneralUpgrade): void {
         this.upgrades_bought[item.id] += 1;
 
         const button = document.getElementById("button_item" + item.id) as HTMLButtonElement;
         button.disabled = true;
-
-        this.update_shop_element();
-        this.update_cps_shop_element();
     }
 
-    buy_cps(item: ICpsUpgrade) {
+    buy_cps(item: CpsUpgrade): void {
         this.cps_upgrades_bought[item.id] += 1;
         this.cps_upgrades[item.id]!.cost = Math.floor(this.cps_upgrades[item.id]!.cost * CPS_COST_MULTIPLIER);
-        this.update_cps_shop_element();
-    }
-
-    update_shop_element() {
-        for (const s in this.upgrades_bought) {
-            const i = parseInt(s, 10);
-            const item = this.general_upgrades[i]!;
-
-            // Disable the button if you bought that upgrade.
-            if (this.upgrades_bought[i]! > 0) {
-                const button = document
-                    .getElementById("button_item" + item.id) as HTMLButtonElement;
-
-                button.disabled = true;
-            }
-
-            // Enable the next item if you bought the previous one.
-            if (this.upgrades_bought[i - 1]! > 0) {
-                const li = document.getElementById("list_item" + item.id) as HTMLLIElement;
-                li.hidden = false;
-            }
-        }
-    }
-
-    update_cps_shop_element() {
-        const multipliers = this.get_multipliers();
-        for (const s in this.cps_upgrades_bought) {
-            const i = parseInt(s, 10);
-            const item = this.cps_upgrades[i]!;
-
-            const button = document
-                .getElementById("button_cps_item" + item.id) as HTMLButtonElement;
-            const stat = document
-                .getElementById("p_stat_cps_item" + item.id) as HTMLParagraphElement;
-
-            const count = this.cps_upgrades_bought[item.id]!;
-
-            button.textContent =
-            `${item.name}, ${format_number(item.cost, 0)}${CURRENCY_TEXT}`;
-            stat.textContent =
-            `+${item.gives * multipliers[item.id]!} ${CURRENCY_TEXT}/s`;
-
-            // NOTE: this is temporary
-            if (count > 0) {
-                const producing = document
-                    .getElementById("p_producing_cps_item" + item.id) as HTMLParagraphElement;
-                const producing_text =
-                    `You have ${count}, producing ${format_number(item.gives * count * multipliers[item.id]!, 1)} ${CURRENCY_TEXT}/s`;
-                producing.textContent = producing_text;
-            }
-
-            // Enable the next item if *you bought the previous one*
-            // NOTE: there should be more general way to have different type of conditions for this to happen
-            if (this.cps_upgrades_bought[i - 1]! > 0) {
-                const li = document
-                    .getElementById("list_cps_item" + item.id) as HTMLLIElement;
-                li.hidden = false;
-            }
-        }
     }
 }
 
 class Cookiezi {
-    amount: number;
-    power: number;
-    cps: number;
+    private amount: number;
+    private total: number;
+    private power: number;
+    private cps: number;
 
-    settings: ISettings;
+    settings: Settings;
     shop: Shop;
 
     constructor(shop: Shop) {
         this.amount = 0;
+        this.total = 0;
+
         this.power = 1;
         this.cps = 0;
 
@@ -498,13 +536,25 @@ class Cookiezi {
         ticks: TPS
     }
 
-    initialize_shop() {
+    get_cps(): number {
+        return this.cps;
+    }
+
+    get_pp(): number {
+        return this.amount;
+    }
+
+    get_total(): number {
+        return this.total;
+    }
+
+    initialize_shop(): void {
         for (const s in this.shop.cps_upgrades) {
             const i = parseInt(s, 10);
             const item = this.shop.cps_upgrades[i]!;
             const item_element = make_shop_item(item, `+${item.gives} ${CURRENCY_TEXT}/s`, "cps_item", this.buy_cps(item));
 
-            if (i > 0) item_element.hidden = true;
+            if (item.show_conditions) item_element.hidden = true;
             CPS_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
         }
 
@@ -513,47 +563,154 @@ class Cookiezi {
             const item = this.shop.general_upgrades[i]!;
             const item_element = make_shop_item(item, item.stat, "item", this.buy(item));
 
-            if (i > 0) item_element.hidden = true;
+            if (item.show_conditions) item_element.hidden = true;
             GENERAL_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
         }
     }
 
-    // Buy methods return an action that you can put on a button.
-    buy_cps(item: ICpsUpgrade): () => void {
-        const self = this;
-        return function () {
-            if (self.amount < item.cost) {
-                alert("Not enough " + CURRENCY_TEXT + " to buy \"" + item.name + "\" :(");
-                return;
+    check_item_conditions(item: GeneralUpgrade | CpsUpgrade): boolean {
+        for (const s in item.show_conditions!) {
+            const i = parseInt(s, 10);
+            const cond = item.show_conditions[i]!;
+
+            switch (cond.type) {
+                case "has_cps": {
+                    if (this.get_cps() < cond.value)
+                        return false;
+                } break;
+                case "has_cps_upgrade": {
+                    assert("has_cps_upgrade value is not out of range",
+                        cond.value < this.shop.cps_upgrades_bought.length);
+                    if (this.shop.cps_upgrades_bought[cond.value]! < (cond.amount || 1)) {
+                        return false;
+                    }
+                } break;
+                case "has_current_pp": {
+                    if (this.get_pp() < cond.value) {
+                        return false;
+                    }
+                } break;
+                case "has_upgrade": {
+                    assert("has_upgrade value is not out of range",
+                        cond.value < this.shop.upgrades_bought.length);
+                    if (this.shop.upgrades_bought[cond.value]! < 1) {
+                        return false;
+                    }
+                } break;
+                case "total_pp": {
+                    if (this.get_total() < cond.value) {
+                        return false;
+                    }
+                } break;
             }
-            self.amount -= item.cost;
+        }
+        return true;
+    }
 
-            self.shop.buy_cps(item);
-            self.shop.update_cps_shop_element();
+    // TODO: encapsulation Am I Right
+    update_shop_element() {
+        for (const s in this.shop.upgrades_bought) {
+            const i = parseInt(s, 10);
+            const item = this.shop.general_upgrades[i]!;
 
-            self.cps = self.shop.get_cps();
+            // Disable the button if you bought that upgrade.
+            if (this.shop.upgrades_bought[i]! > 0) {
+                const button = document
+                    .getElementById("button_item" + item.id) as HTMLButtonElement;
+
+                button.disabled = true;
+            }
+
+            const li = document
+                .getElementById("list_item" + item.id) as HTMLLIElement;
+
+            if (item.show_conditions && li.hidden === true) {
+                if (this.check_item_conditions(item)) {
+                    li.hidden = false;
+                }
+            } else {
+                li.hidden = false;
+            }
         }
     }
 
-    buy(item: IGeneralUpgrade): () => void {
+    update_cps_shop_element(this: Cookiezi) {
+        const multipliers = this.shop.get_multipliers();
+        for (const s in this.shop.cps_upgrades_bought) {
+            const i = parseInt(s, 10);
+            const item = this.shop.cps_upgrades[i]!;
+
+            const button = document
+                .getElementById("button_cps_item" + item.id) as HTMLButtonElement;
+            const stat = document
+                .getElementById("p_stat_cps_item" + item.id) as HTMLParagraphElement;
+
+            const count = this.shop.cps_upgrades_bought[item.id]!;
+
+            button.textContent =
+                `${item.name}, ${format_number(item.cost, 0)}${CURRENCY_TEXT}`;
+            stat.textContent =
+                `+${format_number(item.gives * multipliers[item.id]!, 1)} ${CURRENCY_TEXT}/s`;
+
+            // TODO: css
+            if (count > 0) {
+                const producing = document
+                    .getElementById("p_producing_cps_item" + item.id) as HTMLParagraphElement;
+                const producing_text =
+                    `You have ${count}, producing ${format_number(item.gives * count * multipliers[item.id]!, 1)} ${CURRENCY_TEXT}/s`;
+                producing.textContent = producing_text;
+            }
+
+            const li = document.getElementById("list_cps_item" + item.id) as HTMLLIElement;
+
+            if (item.show_conditions && li.hidden === true) {
+                if (this.check_item_conditions(item)) {
+                    li.hidden = false;
+                }
+            } else {
+                li.hidden = false;
+            }
+        }
+    }
+
+    // Buy methods return an action that you can put on a button.
+    buy_cps(item: CpsUpgrade): () => void {
         const self = this;
         return function () {
             if (self.amount < item.cost) {
                 alert("Not enough " + CURRENCY_TEXT + " to buy \"" + item.name + "\" :(");
                 return;
             }
-            self.amount -= item.cost;
+            self.remove_pp(item.cost);
+
+            self.shop.buy_cps(item);
+            self.update_shop_element();
+            self.update_cps_shop_element();
+
+            self.cps = self.shop.calc_cps();
+        }
+    }
+
+    buy(item: GeneralUpgrade): () => void {
+        const self = this;
+        return function () {
+            if (self.amount < item.cost) {
+                alert("Not enough " + CURRENCY_TEXT + " to buy \"" + item.name + "\" :(");
+                return;
+            }
+            self.remove_pp(item.cost);
 
             self.shop.buy(item);
-            self.shop.update_shop_element();
+            self.update_shop_element();
+            self.update_cps_shop_element();
 
-            self.power = self.shop.get_tap_power();
-            self.cps = self.shop.get_cps();
+            self.power = self.shop.calc_tap_power();
+            self.cps = self.shop.calc_cps();
         }
     }
 
     // This is to avoid clicking when holding button down.
-    press_key(k: IKey): void {
+    press_key(k: Key): void {
         if (k.is_down) return;
 
         k.is_down = true;
@@ -569,16 +726,25 @@ class Cookiezi {
         }, 1000)
     }
 
-    unpress_key(k: IKey): void {
+    unpress_key(k: Key): void {
         k.is_down = false;
     }
 
+    add_pp(amount: number) {
+        this.total += amount;
+        this.amount += amount;
+    }
+
+    remove_pp(amount: number) {
+        this.amount -= amount;
+    }
+
     click(): void {
-        this.amount += this.power;
+        this.add_pp(this.power);
     }
 
     invoke_cps(): void {
-        this.amount += this.cps / TPS;
+        this.add_pp(this.cps / TPS);
     }
 
     update_main_elements(): void {
@@ -586,7 +752,7 @@ class Cookiezi {
 
         // TODO: This doesn't calculate properly.
         BPM_TEXT_ELEMENT.textContent =
-            Math.floor(speed * 60 / 4) + " BPM";
+            speed > 0 ? Math.floor(speed * 60 / 4) + " BPM" : ":3c";
         AMOUNT_TEXT_ELEMENT.textContent =
             format_number(Math.floor(this.amount), 0) + CURRENCY_TEXT;
         CPS_TEXT_ELEMENT.textContent =
@@ -598,7 +764,7 @@ class Cookiezi {
     }
 
     update_passive_cps(): void {
-        this.cps = this.shop.get_cps();
+        this.cps = this.shop.calc_cps();
     }
 
     update_cps(): void {
@@ -688,7 +854,7 @@ window.onfocus = () => {
     const current_time = new Date().getTime();
     const time_difference = current_time - cookiezi.last_inactive_time;
     if (time_difference > 1000) {
-        cookiezi.amount += cookiezi.cps * (time_difference / 1000);
+        cookiezi.add_pp(cookiezi.get_cps() * (time_difference / 1000));
     }
 }
 
