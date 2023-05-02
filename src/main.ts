@@ -1,16 +1,17 @@
-  //===========================================//
- /*                                            *
- *             Cookiezi Clicker :3             *
- *                     by                      *
- *              toiletbril@github              *
- *                                            */
+//===========================================//
+/*                                            *
+*             Cookiezi Clicker :3             *
+*                     by                      *
+*              toiletbril@github              *
+*                                            */
 //===========================================//
 
- /*
+/*
 TODO:
-  - Optimizations and cleanup
-  - Cascase style sheet
- */
+ - Optimization of calc functions
+ - Separate the files
+ - Cascase style sheet
+*/
 
 //===========================================//
 
@@ -111,22 +112,22 @@ function make_shop_item(item: CpsUpgrade | GeneralUpgrade, stat_text: string,
 
     const id = item_type + item.id;
 
-    // LIST ITEM: list_item1
+    // List item: list_item1
     item_element
         .setAttribute("id", "list_" + id);
-    // BUTTON: button_cps_item0
+    // Button: button_cps_item0
     buy_button
         .setAttribute("id", "button_" + id);
-    // STATS STRING: p_stat_item3
+    // Stats string: p_stat_item3
     p_stat
         .setAttribute("id", "p_stat_" + id);
-    // DESC STRING: p_cps_item2
+    // Desc string: p_cps_item2
     p_desc
         .setAttribute("id", "p_" + id);
-    // DIV WITH TEXT: desc_div_item5
+    // Div with stats text: desc_div_item5
     desc_div
         .setAttribute("id", "desc_div_" + id);
-    // DIV WITH TEXT: div_item5
+    // Div with element: div_item5
     div
         .setAttribute("id", "div_" + id);
 
@@ -140,7 +141,7 @@ function make_shop_item(item: CpsUpgrade | GeneralUpgrade, stat_text: string,
 
     if (item_type == "cps_item") {
         const p_producing = document.createElement("p");
-        // NUMBER OF CPS THAT ITEM IS PRODUING: p_producing_cps_item3
+        // Number of cps that item is produing: p_producing_cps_item3
         p_producing
             .setAttribute("id", "p_producing_" + id);
         desc_div.appendChild(p_producing);
@@ -156,16 +157,17 @@ function make_shop_item(item: CpsUpgrade | GeneralUpgrade, stat_text: string,
 
 //===========================================//
 
-type ActionType = "multiplier"
-                | "tap_power"
-                | "tap_power_multiplier";
+type ActionType
+    = "multiplier"
+    | "tap_power"
+    | "tap_power_multiplier";
 
-type ShowConditionType = "has_upgrade"
-                       | "has_cps_upgrade"
-                       | "has_cps"
-                       | "has_current_pp"
-                       | "total_pp"
-                       | "has_pps";
+type ShowConditionType
+    = "has_upgrade"
+    | "has_cps_upgrade"
+    | "has_cps"
+    | "has_current_pp"
+    | "total_pp";
 
 type ShowCondition = {
     type: ShowConditionType,
@@ -219,8 +221,8 @@ class Shop {
         },
         {
             id: 1,
-            name: "Logitech",
-            desc: "Item description =D",
+            name: "Trackball",
+            desc: "A pointing device.",
             cost: 440,
             gives: 1,
             show_conditions: [
@@ -232,7 +234,7 @@ class Shop {
         },
         {
             id: 2,
-            name: "A drill",
+            name: "Drill",
             desc: "Drill, usually fitted with a driving tool attachment, now fitted with a keyboard.",
             cost: 1960,
             gives: 4,
@@ -247,7 +249,7 @@ class Shop {
         {
             id: 3,
             name: "Vaxei",
-            desc: "Item description =D",
+            desc: "The following readme will serve to document all of Vaxei's skins.",
             cost: 9420,
             gives: 10,
             show_conditions: [
@@ -261,7 +263,7 @@ class Shop {
         {
             id: 4,
             name: "Cookiezi",
-            desc: "Item description =D",
+            desc: "Shigetora, better known online as chocomint and formerly as Cookiezi, is a famous South Korean osu!standard player.",
             cost: 74500,
             gives: 55,
             show_conditions: [
@@ -319,17 +321,13 @@ class Shop {
                 {
                     type: "has_upgrade",
                     value: 0
-                },
-                {
-                    type: "has_pps",
-                    value: 10
                 }
             ]
         },
         {
             id: 3,
             name: "Vacom toilet",
-            desc: "10 Reasons Why You Might Want a High-Tech Super Toilet",
+            desc: "10 Reasons Why You Might Want a High-Tech Super Toilet.",
             stat: `+3.2 ${TAP_POWER_TEXT}`,
             cost: 4600,
             action: {
@@ -454,8 +452,8 @@ class Shop {
         const multipliers = this.get_multipliers()!;
         assert("multipliers is valid length", multipliers.length === this.cps_upgrades.length);
         return this.cps_upgrades_bought
-                .map((a, i) => a * this.cps_upgrades[i]!.gives * multipliers[i]!)
-                .reduce((a, b) => a + b);
+            .map((a, i) => a * this.cps_upgrades[i]!.gives * multipliers[i]!)
+            .reduce((a, b) => a + b);
     }
 
     calc_tap_power(): number {
