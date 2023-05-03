@@ -17,14 +17,14 @@ TODO:
 
 const AMOUNT_TEXT_ELEMENT
     = document.getElementById("amount") as HTMLElement;
-const CPS_SHOP_ITEMS_LIST_ELEMENT
-    = document.getElementById("cps_shop_items") as HTMLUListElement;
+const PPS_SHOP_ITEMS_LIST_ELEMENT
+    = document.getElementById("pps_shop_items") as HTMLUListElement;
 const GENERAL_SHOP_ITEMS_LIST_ELEMENT
     = document.getElementById("shop_items") as HTMLUListElement;
 const TAP_POWER_TEXT_ELEMENT
     = document.getElementById("tap_power") as HTMLElement;
-const CPS_TEXT_ELEMENT
-    = document.getElementById("cps") as HTMLElement;
+const PPS_TEXT_ELEMENT
+    = document.getElementById("pps") as HTMLElement;
 const UPGRADES_COUNT_TEXT_ELEMENT
     = document.getElementById("upgrades_count") as HTMLElement;
 const CHANGE_KEYS_BUTTON_ELEMENT
@@ -38,10 +38,9 @@ const BPM_TEXT_ELEMENT
 
 assert("All elements are not null",
     !!AMOUNT_TEXT_ELEMENT &&
-    !!CPS_SHOP_ITEMS_LIST_ELEMENT &&
+    !!PPS_SHOP_ITEMS_LIST_ELEMENT &&
     !!GENERAL_SHOP_ITEMS_LIST_ELEMENT &&
     !!TAP_POWER_TEXT_ELEMENT &&
-    !!CPS_SHOP_ITEMS_LIST_ELEMENT &&
     !!UPGRADES_COUNT_TEXT_ELEMENT &&
     !!CHANGE_KEYS_BUTTON_ELEMENT &&
     !!KEYS_TEXT_ELEMENT &&
@@ -67,7 +66,7 @@ const TAP_POWER_TEXT =
 const FORMAT_CHAR =
     ",";
 
-const CPS_COST_MULTIPLIER = 1.15;
+const PPS_COST_MULTIPLIER = 1.15;
 
 //===========================================//
 
@@ -85,8 +84,8 @@ function format_number(n: number, fixed: number): string {
     return n.toFixed(fixed).replace(/\B(?=(\d{3})+(?!\d))/g, FORMAT_CHAR);
 }
 
-function make_shop_item(item: CpsUpgrade | GeneralUpgrade, stat_text: string,
-    item_type: "cps_item" | "item", click_action: () => void): HTMLLIElement {
+function make_shop_item(item: PpsUpgrade | GeneralUpgrade, stat_text: string,
+    item_type: "pps_item" | "item", click_action: () => void): HTMLLIElement {
 
     const item_element =
         document.createElement("li");
@@ -115,13 +114,13 @@ function make_shop_item(item: CpsUpgrade | GeneralUpgrade, stat_text: string,
     // List item: list_item1
     item_element
         .setAttribute("id", "list_" + id);
-    // Button: button_cps_item0
+    // Button: button_pps_item0
     buy_button
         .setAttribute("id", "button_" + id);
     // Stats string: p_stat_item3
     p_stat
         .setAttribute("id", "p_stat_" + id);
-    // Desc string: p_cps_item2
+    // Desc string: p_pps_item2
     p_desc
         .setAttribute("id", "p_" + id);
     // Div with stats text: desc_div_item5
@@ -139,9 +138,9 @@ function make_shop_item(item: CpsUpgrade | GeneralUpgrade, stat_text: string,
     desc_div.appendChild(p_desc);
     desc_div.appendChild(p_stat);
 
-    if (item_type == "cps_item") {
+    if (item_type == "pps_item") {
         const p_producing = document.createElement("p");
-        // Number of cps that item is produing: p_producing_cps_item3
+        // Number of pps that item is produing: p_producing_pps_item3
         p_producing
             .setAttribute("id", "p_producing_" + id);
         desc_div.appendChild(p_producing);
@@ -164,8 +163,8 @@ type ActionType
 
 type ShowConditionType
     = "has_upgrade"
-    | "has_cps_upgrade"
-    | "has_cps"
+    | "has_pps_upgrade"
+    | "has_pps"
     | "has_current_pp"
     | "total_pp";
 
@@ -175,7 +174,7 @@ type ShowCondition = {
     amount?: number;
 }
 
-type CpsUpgrade = {
+type PpsUpgrade = {
     id: number,
     name: string,
     desc: string,
@@ -211,7 +210,7 @@ type Settings = {
 //===========================================//
 
 class Shop {
-    cps_upgrades: CpsUpgrade[] = [
+    pps_upgrades: PpsUpgrade[] = [
         {
             id: 0,
             name: "Keyboard button",
@@ -227,7 +226,7 @@ class Shop {
             gives: 1,
             show_conditions: [
                 {
-                    type: "has_cps_upgrade",
+                    type: "has_pps_upgrade",
                     value: 0
                 }
             ]
@@ -240,7 +239,7 @@ class Shop {
             gives: 4,
             show_conditions: [
                 {
-                    type: "has_cps_upgrade",
+                    type: "has_pps_upgrade",
                     value: 1,
                     amount: 2
                 }
@@ -254,7 +253,7 @@ class Shop {
             gives: 10,
             show_conditions: [
                 {
-                    type: "has_cps_upgrade",
+                    type: "has_pps_upgrade",
                     value: 2,
                     amount: 3
                 }
@@ -268,7 +267,7 @@ class Shop {
             gives: 55,
             show_conditions: [
                 {
-                    type: "has_cps_upgrade",
+                    type: "has_pps_upgrade",
                     value: 3,
                     amount: 5
                 }
@@ -301,7 +300,7 @@ class Shop {
             },
             show_conditions: [
                 {
-                    type: "has_cps_upgrade",
+                    type: "has_pps_upgrade",
                     value: 0,
                     amount: 5
                 }
@@ -354,12 +353,12 @@ class Shop {
             },
             show_conditions: [
                 {
-                    type: "has_cps_upgrade",
+                    type: "has_pps_upgrade",
                     value: 1,
                     amount: 4
                 },
                 {
-                    type: "has_cps_upgrade",
+                    type: "has_pps_upgrade",
                     value: 2,
                     amount: 2
                 }
@@ -422,16 +421,16 @@ class Shop {
         }
     ]
 
-    cps_upgrades_bought: number[];
+    pps_upgrades_bought: number[];
     upgrades_bought: number[];
 
     constructor() {
-        this.cps_upgrades_bought = new Array<number>(this.cps_upgrades.length).fill(0);
+        this.pps_upgrades_bought = new Array<number>(this.pps_upgrades.length).fill(0);
         this.upgrades_bought = new Array<number>(this.general_upgrades.length).fill(0);
     }
 
     get_multipliers(): Array<number> {
-        const result_array = new Array<number>(this.cps_upgrades.length).fill(1);
+        const result_array = new Array<number>(this.pps_upgrades.length).fill(1);
 
         for (const s in this.general_upgrades) {
             const i = parseInt(s, 10);
@@ -448,11 +447,11 @@ class Shop {
         return result_array;
     }
 
-    calc_cps(): number {
+    calc_pps(): number {
         const multipliers = this.get_multipliers()!;
-        assert("multipliers is valid length", multipliers.length === this.cps_upgrades.length);
-        return this.cps_upgrades_bought
-            .map((a, i) => a * this.cps_upgrades[i]!.gives * multipliers[i]!)
+        assert("multipliers is valid length", multipliers.length === this.pps_upgrades.length);
+        return this.pps_upgrades_bought
+            .map((a, i) => a * this.pps_upgrades[i]!.gives * multipliers[i]!)
             .reduce((a, b) => a + b);
     }
 
@@ -484,9 +483,9 @@ class Shop {
         button.disabled = true;
     }
 
-    buy_cps(item: CpsUpgrade): void {
-        this.cps_upgrades_bought[item.id] += 1;
-        this.cps_upgrades[item.id]!.cost = Math.floor(this.cps_upgrades[item.id]!.cost * CPS_COST_MULTIPLIER);
+    buy_pps(item: PpsUpgrade): void {
+        this.pps_upgrades_bought[item.id] += 1;
+        this.pps_upgrades[item.id]!.cost = Math.floor(this.pps_upgrades[item.id]!.cost * PPS_COST_MULTIPLIER);
     }
 }
 
@@ -494,7 +493,7 @@ class Cookiezi {
     private amount: number;
     private total: number;
     private power: number;
-    private cps: number;
+    private pps: number;
 
     settings: Settings;
     shop: Shop;
@@ -504,7 +503,7 @@ class Cookiezi {
         this.total = 0;
 
         this.power = 1;
-        this.cps = 0;
+        this.pps = 0;
 
         this.shop = shop;
 
@@ -534,8 +533,8 @@ class Cookiezi {
         ticks: TPS
     }
 
-    get_cps(): number {
-        return this.cps;
+    get_pps(): number {
+        return this.pps;
     }
 
     get_pp(): number {
@@ -547,13 +546,13 @@ class Cookiezi {
     }
 
     initialize_shop(): void {
-        for (const s in this.shop.cps_upgrades) {
+        for (const s in this.shop.pps_upgrades) {
             const i = parseInt(s, 10);
-            const item = this.shop.cps_upgrades[i]!;
-            const item_element = make_shop_item(item, `+${item.gives} ${CURRENCY_TEXT}/s`, "cps_item", this.buy_cps(item));
+            const item = this.shop.pps_upgrades[i]!;
+            const item_element = make_shop_item(item, `+${item.gives} ${CURRENCY_TEXT}/s`, "pps_item", this.buy_pps(item));
 
             if (item.show_conditions) item_element.hidden = true;
-            CPS_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
+            PPS_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
         }
 
         for (const s in this.shop.general_upgrades) {
@@ -566,20 +565,20 @@ class Cookiezi {
         }
     }
 
-    check_item_conditions(item: GeneralUpgrade | CpsUpgrade): boolean {
+    check_item_conditions(item: GeneralUpgrade | PpsUpgrade): boolean {
         for (const s in item.show_conditions!) {
             const i = parseInt(s, 10);
             const cond = item.show_conditions[i]!;
 
             switch (cond.type) {
-                case "has_cps": {
-                    if (this.get_cps() < cond.value)
+                case "has_pps": {
+                    if (this.get_pps() < cond.value)
                         return false;
                 } break;
-                case "has_cps_upgrade": {
-                    assert("has_cps_upgrade value is not out of range",
-                        cond.value < this.shop.cps_upgrades_bought.length);
-                    if (this.shop.cps_upgrades_bought[cond.value]! < (cond.amount || 1)) {
+                case "has_pps_upgrade": {
+                    assert("has_pps_upgrade value is not out of range",
+                        cond.value < this.shop.pps_upgrades_bought.length);
+                    if (this.shop.pps_upgrades_bought[cond.value]! < (cond.amount || 1)) {
                         return false;
                     }
                 } break;
@@ -606,6 +605,7 @@ class Cookiezi {
     }
 
     // TODO: encapsulation Am I Right
+    // TODO: these can be optimized by updating a particular item instead of everything
     update_shop_element() {
         for (const s in this.shop.upgrades_bought) {
             const i = parseInt(s, 10);
@@ -622,7 +622,8 @@ class Cookiezi {
             const li = document
                 .getElementById("list_item" + item.id) as HTMLLIElement;
 
-            if (item.show_conditions && li.hidden === true) {
+            // TODO: replace li.hiddem with item.available
+            if (item.show_conditions && li.hidden) {
                 if (this.check_item_conditions(item)) {
                     li.hidden = false;
                 }
@@ -632,18 +633,18 @@ class Cookiezi {
         }
     }
 
-    update_cps_shop_element(this: Cookiezi) {
+    update_pps_shop_element(this: Cookiezi) {
         const multipliers = this.shop.get_multipliers();
-        for (const s in this.shop.cps_upgrades_bought) {
+        for (const s in this.shop.pps_upgrades_bought) {
             const i = parseInt(s, 10);
-            const item = this.shop.cps_upgrades[i]!;
+            const item = this.shop.pps_upgrades[i]!;
 
             const button = document
-                .getElementById("button_cps_item" + item.id) as HTMLButtonElement;
+                .getElementById("button_pps_item" + item.id) as HTMLButtonElement;
             const stat = document
-                .getElementById("p_stat_cps_item" + item.id) as HTMLParagraphElement;
+                .getElementById("p_stat_pps_item" + item.id) as HTMLParagraphElement;
 
-            const count = this.shop.cps_upgrades_bought[item.id]!;
+            const count = this.shop.pps_upgrades_bought[item.id]!;
 
             button.textContent =
                 `${item.name}, ${format_number(item.cost, 0)}${CURRENCY_TEXT}`;
@@ -653,15 +654,15 @@ class Cookiezi {
             // TODO: css
             if (count > 0) {
                 const producing = document
-                    .getElementById("p_producing_cps_item" + item.id) as HTMLParagraphElement;
+                    .getElementById("p_producing_pps_item" + item.id) as HTMLParagraphElement;
                 const producing_text =
                     `You have ${count}, producing ${format_number(item.gives * count * multipliers[item.id]!, 1)} ${CURRENCY_TEXT}/s`;
                 producing.textContent = producing_text;
             }
 
-            const li = document.getElementById("list_cps_item" + item.id) as HTMLLIElement;
+            const li = document.getElementById("list_pps_item" + item.id) as HTMLLIElement;
 
-            if (item.show_conditions && li.hidden === true) {
+            if (item.show_conditions && li.hidden) {
                 if (this.check_item_conditions(item)) {
                     li.hidden = false;
                 }
@@ -672,7 +673,7 @@ class Cookiezi {
     }
 
     // Buy methods return an action that you can put on a button.
-    buy_cps(item: CpsUpgrade): () => void {
+    buy_pps(item: PpsUpgrade): () => void {
         const self = this;
         return function () {
             if (self.amount < item.cost) {
@@ -681,11 +682,11 @@ class Cookiezi {
             }
             self.remove_pp(item.cost);
 
-            self.shop.buy_cps(item);
+            self.shop.buy_pps(item);
             self.update_shop_element();
-            self.update_cps_shop_element();
+            self.update_pps_shop_element();
 
-            self.cps = self.shop.calc_cps();
+            self.pps = self.shop.calc_pps();
         }
     }
 
@@ -700,10 +701,10 @@ class Cookiezi {
 
             self.shop.buy(item);
             self.update_shop_element();
-            self.update_cps_shop_element();
+            self.update_pps_shop_element();
 
             self.power = self.shop.calc_tap_power();
-            self.cps = self.shop.calc_cps();
+            self.pps = self.shop.calc_pps();
         }
     }
 
@@ -741,8 +742,8 @@ class Cookiezi {
         this.add_pp(this.power);
     }
 
-    invoke_cps(): void {
-        this.add_pp(this.cps / TPS);
+    invoke_pps(): void {
+        this.add_pp(this.pps / TPS);
     }
 
     update_main_elements(): void {
@@ -753,19 +754,19 @@ class Cookiezi {
             speed > 0 ? Math.floor(speed * 60 / 4) + " BPM" : ":3c";
         AMOUNT_TEXT_ELEMENT.textContent =
             format_number(Math.floor(this.amount), 0) + CURRENCY_TEXT;
-        CPS_TEXT_ELEMENT.textContent =
-            CURRENCY_TEXT + "/s: " + format_number(this.cps + speed, 1);
+        PPS_TEXT_ELEMENT.textContent =
+            CURRENCY_TEXT + "/s: " + format_number(this.pps + speed, 1);
         TAP_POWER_TEXT_ELEMENT.textContent =
             TAP_POWER_TEXT + ": " + this.power;
         UPGRADES_COUNT_TEXT_ELEMENT.textContent =
-            "Items bought: " + this.shop.cps_upgrades_bought.reduce((a, b) => a + b, 0);
+            "Items bought: " + this.shop.pps_upgrades_bought.reduce((a, b) => a + b, 0);
     }
 
-    update_passive_cps(): void {
-        this.cps = this.shop.calc_cps();
+    update_passive_pps(): void {
+        this.pps = this.shop.calc_pps();
     }
 
-    update_cps(): void {
+    update_pps(): void {
         if (this.clicks.is_tapping) {
             this.clicks.ticks += 1;
         } else if (this.clicks.ticks != TPS) {
@@ -780,8 +781,8 @@ class Cookiezi {
     }
 
     update(): void {
-        this.invoke_cps();
-        this.update_cps();
+        this.invoke_pps();
+        this.update_pps();
         this.update_main_elements();
     }
 }
@@ -852,7 +853,7 @@ window.onfocus = () => {
     const current_time = new Date().getTime();
     const time_difference = current_time - cookiezi.last_inactive_time;
     if (time_difference > 1000) {
-        cookiezi.add_pp(cookiezi.get_cps() * (time_difference / 1000));
+        cookiezi.add_pp(cookiezi.get_pps() * (time_difference / 1000));
     }
 }
 
