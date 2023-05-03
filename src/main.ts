@@ -31,8 +31,6 @@ const CHANGE_KEYS_BUTTON_ELEMENT
     = document.getElementById("change_keys") as HTMLButtonElement;
 const KEYS_TEXT_ELEMENT
     = document.getElementById("keys") as HTMLButtonElement;
-const MAIN_DIV_ELEMENT
-    = document.getElementById("main") as HTMLDivElement;
 const BPM_TEXT_ELEMENT
     = document.getElementById("bpm") as HTMLHeadingElement;
 
@@ -44,8 +42,7 @@ assert("All elements are not null",
     !!UPGRADES_COUNT_TEXT_ELEMENT &&
     !!CHANGE_KEYS_BUTTON_ELEMENT &&
     !!KEYS_TEXT_ELEMENT &&
-    !!BPM_TEXT_ELEMENT &&
-    !!MAIN_DIV_ELEMENT
+    !!BPM_TEXT_ELEMENT
 );
 
 const TPS = 40;

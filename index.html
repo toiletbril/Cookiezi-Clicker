@@ -4,30 +4,35 @@
     <meta charset="utf-8">
     <title>Cookiezi Clicker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <body>
-        <div id="main">
-            <h1>Cookiezi Clicker</h2>
-            <h1 id="amount">Loading...</h1>
-            <h4 id="bpm"></h4>
-            <p id="keys">Tap Z/X to gain pp.</p>
-            <button id="change_keys">Change keys...</button>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="./styles/main.css">
+</head>
+<body>
+        <div class="wrapper">
+            <div class="main">
+                <h1>Cookiezi Clicker</h2>
+                <h1 id="amount">Loading...</h1>
+                <h4 id="bpm"></h4>
+                <p id="keys">Tap Z/X to gain pp.</p>
+                <button id="change_keys">Change keys...</button>
+            </div>
+            <div class="stats">
+                <h3>Stats</h3>
+                <ul>
+                    <li id="pps">Loading...</li>
+                    <li id="tap_power"></li>
+                    <li id="upgrades_count"></li>
+                </ul>
+            </div>
+            <div class="pps_shop">
+                <h3>Shop</h3>
+                <ul id="pps_shop_items"></ui>
+            </div>
+            <div class="shop">
+                <h3>Upgrades</h3>
+                <ul id="shop_items"></ui>
+            </div>
         </div>
-        <div>
-            <h3>Stats</h3>
-            <ul>
-                <li id="pps">Loading...</li>
-                <li id="tap_power"></li>
-                <li id="upgrades_count"></li>
-            </ul>
-        </div>
-        <div>
-            <h3>Shop</h3>
-            <ul id="pps_shop_items"></ui>
-        </div>
-        <div>
-            <h3>Upgrades</h3>
-            <ul id="shop_items"></ui>
-        </div>
-    </body>
-    <script src="main.js"></script>
+</body>
+<script src="./scripts/main.js"></script>
 </html>

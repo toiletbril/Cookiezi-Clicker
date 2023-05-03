@@ -4,7 +4,7 @@
     ],
     "exclude": [],
     "compilerOptions": {
-        "outFile": "./main.js",
+        "outFile": "scripts/main.js",
         "target": "es2020",
         "strict": true,
         "alwaysStrict": true,
