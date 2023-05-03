@@ -104,7 +104,7 @@ function make_shop_item(item: PpsUpgrade | GeneralUpgrade, stat_text: string,
     const item_name = document
         .createTextNode(item.name);
     const item_cost = document
-        .createTextNode(item.cost + CURRENCY_TEXT);
+        .createTextNode(format_number(item.cost, 0) + CURRENCY_TEXT);
     const stats = document
         .createTextNode(stat_text);
     const desc = document
@@ -162,25 +162,46 @@ function make_shop_item(item: PpsUpgrade | GeneralUpgrade, stat_text: string,
     return item_element;
 }
 
+function game_end(time_started: number): void {
+    const current_time = (new Date).getTime()
+    const time_wasted = current_time - time_started;
+
+    const the = "To be fair, you have to have a very high IQ to understand technical mapping. The SV changes are extremely subtle, and without a solid grasp of music theory most of the quality will go over a typical player's head. There's also Monstrata's triangular outlook, which is deftly woven into his mapping - his personal philosophy draws heavily from Pishifat literature, for instance. The fans understand this stuff; they have the intellectual capacity to truly appreciate the Depths of these patterns, to realize that they're not just high quality- they say something deep about MAPPING. As a consequence people who dislike technical maps truly ARE idiots- of course they wouldn't appreciate, for instance, the quality in Sotarks' existencial catchphrase \"this needs more overdone jumps,\" which itself is a Cryptic reference to Monstrata's map quaver. I'm smirking right now just imagining one of those addlepated simpletons scratching their heads in confusion as Natsu's genius unfolds itself on their computer screens. What fools... how I pity them. 😂 And yes by the way, I DO have a Monstrata slider butterfly tattoo. And no, you cannot see it. It's for the ladies' eyes only- And even they have to demonstrate that they're within 5 PP points of my own (preferably lower) beforehand."
+
+    alert(`${the}\n\nYou completed the game in ${Math.floor(time_wasted / 1000 / 60)} minutes.\nThanks for playing.`)
+}
+
 //===========================================//
 
-type ActionType
-    = "multiplier"
-    | "tap_power"
+type ActionTypeMultiplier
+    = "multiplier";
+
+type ActionTypeSimple
+    = "tap_power"
     | "tap_power_multiplier";
 
-type ShowConditionType
+type ActionTypeFunc
+    = "game_end";
+
+type ShowConditionTypeUpgrade
     = "has_upgrade"
-    | "has_pps_upgrade"
-    | "has_pps"
+    | "has_pps_upgrade";
+
+type ShowConditionTypeSimple
+    = "has_pps"
     | "has_current_pp"
     | "total_pp";
 
-type ShowCondition = {
-    type: ShowConditionType,
-    value: number,
-    amount?: number;
-}
+type ShowCondition
+    = {
+        type: ShowConditionTypeUpgrade,
+        item: number,
+        amount?: number;
+    } | {
+        type: ShowConditionTypeSimple,
+        value: number;
+    }
+
 
 type PpsUpgrade = {
     id: number,
@@ -198,9 +219,15 @@ type GeneralUpgrade = {
     desc: string,
     cost: number,
     action: {
-        type: ActionType,
+        type: ActionTypeMultiplier,
         value: number,
-        item_ids?: number[]
+        item_ids: number[]
+    } | {
+        type: ActionTypeSimple,
+        value: number
+    } | {
+        type: ActionTypeFunc
+        action: (...any: any) => void
     },
     show_conditions?: ShowCondition[]
 }
@@ -238,8 +265,8 @@ class Shop {
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
-                    value: 0,
-                    amount: 2
+                    item: 0,
+                    amount: 4
                 }
             ]
         },
@@ -248,13 +275,13 @@ class Shop {
             name: "Drill",
             desc: "Drill, usually fitted with a driving tool attachment, \
                    now fitted with a keyboard.",
-            cost: 3770,
-            gives: 6,
+            cost: 2770,
+            gives: 8,
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
-                    value: 1,
-                    amount: 4
+                    item: 1,
+                    amount: 6
                 }
             ]
         },
@@ -262,13 +289,13 @@ class Shop {
             id: PPS_IOTA++,
             name: "Vaxei",
             desc: "The following README will serve to document all of Vaxei's skins.",
-            cost: 29000,
-            gives: 36,
+            cost: 19000,
+            gives: 42,
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
-                    value: 2,
-                    amount: 4
+                    item: 2,
+                    amount: 6
                 }
             ]
         },
@@ -277,36 +304,39 @@ class Shop {
             name: "Cookiezi",
             desc: "Shigetora, better known online as chocomint and formerly as Cookiezi, \
                    is a famous South Korean osu!standard player.",
-            cost: 205000,
-            gives: 102,
+            cost: 85000,
+            gives: 132,
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
-                    value: 3,
-                    amount: 5
+                    item: 3,
+                    amount: 6
                 }
             ]
-        }
+        },
+        {
+            id: PPS_IOTA++,
+            name: "Aetrna",
+            desc: "The.",
+            cost: 396000,
+            gives: 1100,
+            show_conditions: [
+                {
+                    type: "has_pps_upgrade",
+                    item: 4,
+                    amount: 12
+                }
+            ]
+        },
     ];
 
     general_upgrades: GeneralUpgrade[] = [
         {
             id: UPG_IOTA++,
-            name: "Spicy ramen",
-            desc: "You start to sweat.",
-            stat: `+0.6 ${TAP_POWER_TEXT}`,
-            cost: 520,
-            action: {
-                type: "tap_power",
-                value: 0.6
-            }
-        },
-        {
-            id: UPG_IOTA++,
             name: "Bateron switch",
             desc: "You order some switches.",
             stat: "Keyboard buttons are twice more effective.",
-            cost: 1340,
+            cost: 340,
             action: {
                 type: "multiplier",
                 item_ids: [0],
@@ -315,10 +345,21 @@ class Shop {
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
-                    value: 0,
+                    item: 0,
                     amount: 5
                 }
             ]
+        },
+        {
+            id: UPG_IOTA++,
+            name: "Spicy ramen",
+            desc: "You start to sweat.",
+            stat: `+0.6 ${TAP_POWER_TEXT}`,
+            cost: 620,
+            action: {
+                type: "tap_power",
+                value: 0.6
+            }
         },
         {
             id: UPG_IOTA++,
@@ -333,7 +374,7 @@ class Shop {
             show_conditions: [
                 {
                     type: "has_upgrade",
-                    value: 0
+                    item: 0
                 }
             ]
         },
@@ -350,7 +391,7 @@ class Shop {
             show_conditions: [
                 {
                     type: "has_upgrade",
-                    value: 2
+                    item: 2
                 }
             ]
         },
@@ -368,7 +409,7 @@ class Shop {
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
-                    value: 0,
+                    item: 0,
                     amount: 12
                 }
             ]
@@ -387,12 +428,12 @@ class Shop {
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
-                    value: 1,
+                    item: 1,
                     amount: 4
                 },
                 {
                     type: "has_pps_upgrade",
-                    value: 2,
+                    item: 2,
                     amount: 2
                 }
             ]
@@ -410,7 +451,7 @@ class Shop {
             show_conditions: [
                 {
                     type: "has_upgrade",
-                    value: 5
+                    item: 5
                 }
             ]
         },
@@ -429,8 +470,8 @@ class Shop {
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
-                    value: 3,
-                    amount: 4
+                    item: 3,
+                    amount: 10
                 }
             ]
         },
@@ -441,7 +482,7 @@ class Shop {
                    Without a doubt, one of the most impressive plays ever set in osu! history, \
                    but one that takes some experience to appreciate fully.",
             stat: "Cookiezi becomes twice as effective.",
-            cost: 569000,
+            cost: 279000,
             action: {
                 type: "multiplier",
                 item_ids: [4],
@@ -450,8 +491,26 @@ class Shop {
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
-                    value: 4,
+                    item: 4,
                     amount: 3
+                }
+            ]
+        },
+        {
+            id: UPG_IOTA++,
+            name: "Rank #1",
+            desc: "Hopefully this game has given you some osu! of all time.",
+            stat: "...",
+            cost: 1690000,
+            action: {
+                type: "game_end",
+                action: game_end
+            },
+            show_conditions: [
+                {
+                    type: "has_upgrade",
+                    item: 8,
+                    amount: 2
                 }
             ]
         }
@@ -535,8 +594,10 @@ class Cookiezi {
     private power: number;
     private pps: number;
 
-    settings: Settings;
-    shop: Shop;
+    private started_time: number;
+
+    public settings: Settings;
+    public shop: Shop;
 
     constructor() {
         this.pp = 0;
@@ -544,6 +605,8 @@ class Cookiezi {
 
         this.power = 1;
         this.pps = 0;
+
+        this.started_time = (new Date()).getTime();
 
         this.shop = new Shop();
 
@@ -626,8 +689,8 @@ class Cookiezi {
                 } break;
 
                 case "has_pps_upgrade": {
-                    assert("has_pps_upgrade value is not out of range", condition.value < this.shop.owned_pps_upgrades.length);
-                    if (this.shop.owned_pps_upgrades[condition.value]! < (condition.amount || 1)) {
+                    assert("has_pps_upgrade value is not out of range", condition.item < this.shop.owned_pps_upgrades.length);
+                    if (this.shop.owned_pps_upgrades[condition.item]! < (condition.amount || 1)) {
                         return false;
                     }
                 } break;
@@ -639,8 +702,8 @@ class Cookiezi {
                 } break;
 
                 case "has_upgrade": {
-                    assert("has_upgrade value is not out of range", condition.value < this.shop.owned_upgrades.length);
-                    if (!this.shop.owned_upgrades[condition.value]) {
+                    assert("has_upgrade value is not out of range", condition.item < this.shop.owned_upgrades.length);
+                    if (!this.shop.owned_upgrades[condition.item]) {
                         return false;
                     }
                 } break;
@@ -702,7 +765,6 @@ class Cookiezi {
             stat.textContent =
                 `+${format_number(item.gives * multipliers[item.id]!, 1)} ${CURRENCY_TEXT}/s`;
 
-            // TODO: css
             if (count > 0) {
                 const producing = document
                     .getElementById("p_producing_pps_item" + item.id) as HTMLParagraphElement;
@@ -756,6 +818,10 @@ class Cookiezi {
             self.remove_pp(item.cost);
 
             self.shop.buy(item);
+
+            if (item.action.type === "game_end") {
+                item.action.action(self.started_time);
+            }
 
             self.update_shop_element();
             self.update_pps_shop_element();
