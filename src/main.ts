@@ -146,7 +146,7 @@ function make_shop_item(item: PpsUpgrade | GeneralUpgrade, stat_text: string,
 
     if (item_type == "pps_item") {
         const p_producing = document.createElement("p");
-        // Number of pps that item is produing: p_producing_pps_item3
+        // Number of pps that item is producing: p_producing_pps_item3
         p_producing
             .setAttribute("id", "p_producing_" + id);
         desc_div.appendChild(p_producing);
