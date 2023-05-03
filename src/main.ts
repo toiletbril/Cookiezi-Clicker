@@ -12,8 +12,6 @@ TODO:
  - Separate this into several files
 */
 
-//===========================================//
-
 const AMOUNT_TEXT_ELEMENT
     = document.getElementById("amount") as HTMLElement;
 const PPS_SHOP_ITEMS_LIST_ELEMENT
@@ -398,7 +396,7 @@ class Shop {
         {
             id: UPG_IOTA++,
             name: "Ultra lube",
-            desc: "You lube you keyboard.",
+            desc: "You waste several hours lubing your keyboard.",
             stat: "Keyboard buttons are twice more effective.",
             cost: 8040,
             action: {
