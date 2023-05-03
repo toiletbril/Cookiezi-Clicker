@@ -1,1 +1,67 @@
 /* hii */
+
+* {
+    font-family: monospace;
+}
+
+body {
+    font-size: 18px;
+}
+
+ul {
+    padding: 0;
+    list-style: none;
+}
+
+button {
+    border: none;
+}
+
+button:hover {
+    background-color: pink;
+}
+
+div {
+    text-align: center;
+}
+
+.main button {
+    padding: 4px 8px;
+}
+
+.shops button {
+    padding: 8px 16px;
+}
+
+.shops ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.shops li {
+    min-height: 30%;
+    max-width: 30%;
+    min-width: 30%;
+    font-size: 16px;
+    padding: 0px;
+    margin: 12px;
+}
+
+.description {
+    font-style: italic;
+}
+
+.general_shop,
+.pps_shop {
+    width: 50%;
+    margin: 0px;
+}
+
+.general_shop {
+    float: right;
+}
+
+.pps_shop {
+    float: left;
+}

@@ -10,7 +10,6 @@
 TODO:
  - Optimize the calc functions
  - Separate this into several files
- - Cascase style sheet
 */
 
 //===========================================//
@@ -20,13 +19,13 @@ const AMOUNT_TEXT_ELEMENT
 const PPS_SHOP_ITEMS_LIST_ELEMENT
     = document.getElementById("pps_shop_items") as HTMLUListElement;
 const GENERAL_SHOP_ITEMS_LIST_ELEMENT
-    = document.getElementById("shop_items") as HTMLUListElement;
+    = document.getElementById("general_shop_items") as HTMLUListElement;
 const TAP_POWER_TEXT_ELEMENT
     = document.getElementById("tap_power") as HTMLElement;
 const PPS_TEXT_ELEMENT
     = document.getElementById("pps") as HTMLElement;
 const UPGRADES_COUNT_TEXT_ELEMENT
-    = document.getElementById("upgrades_count") as HTMLElement;
+    = document.getElementById("upgrade_count") as HTMLElement;
 const CHANGE_KEYS_BUTTON_ELEMENT
     = document.getElementById("change_keys") as HTMLButtonElement;
 const KEYS_TEXT_ELEMENT
@@ -48,7 +47,7 @@ assert("All elements are not null",
 const TPS = 40;
 
 // This is here to account for setTimeout's delays ;(
-const TPS_ADJ = Math.floor(TPS - TPS / 11);
+const TPS_ADJ = Math.floor(TPS + TPS / 10);
 
 const KEY_COUNT = 2;
 const STOPPED_TAPPING_INTERVAL = 2 * 1000;
@@ -91,6 +90,10 @@ function make_shop_item(item: PpsUpgrade | GeneralUpgrade, stat_text: string,
         .createElement("button");
     const div = document
         .createElement("div");
+    const name_div = document
+        .createElement("div");
+    const cost_div = document
+        .createElement("div");
     const desc_div = document
         .createElement("div");
     const p_desc = document
@@ -98,8 +101,10 @@ function make_shop_item(item: PpsUpgrade | GeneralUpgrade, stat_text: string,
     const p_stat = document
         .createElement("p");
 
-    const item_text = document
-        .createTextNode(`${item.name}, ${item.cost}${CURRENCY_TEXT}`);
+    const item_name = document
+        .createTextNode(item.name);
+    const item_cost = document
+        .createTextNode(item.cost + CURRENCY_TEXT);
     const stats = document
         .createTextNode(stat_text);
     const desc = document
@@ -110,31 +115,36 @@ function make_shop_item(item: PpsUpgrade | GeneralUpgrade, stat_text: string,
     const id = item_type + item.id;
 
     // List item: list_item1
+    // Button: button_pps_item0
     item_element
         .setAttribute("id", "list_" + id);
-    // Button: button_pps_item0
     buy_button
         .setAttribute("id", "button_" + id);
-    // Stats string: p_stat_item3
     p_stat
         .setAttribute("id", "p_stat_" + id);
-    // Desc string: p_pps_item2
     p_desc
         .setAttribute("id", "p_" + id);
-    // Div with stats text: desc_div_item5
     desc_div
-        .setAttribute("id", "desc_div_" + id);
-    // Div with element: div_item5
+        .setAttribute("id", "desc_div_" + id)
+    cost_div
+        .setAttribute("id", "cost_div_" + id);
     div
         .setAttribute("id", "div_" + id);
 
-    buy_button.appendChild(item_text);
+    p_desc
+        .setAttribute("class", "description");
+
+    cost_div.appendChild(item_cost);
+    name_div.appendChild(item_name)
+
+    buy_button.appendChild(name_div);
+    buy_button.appendChild(cost_div);
 
     p_stat.appendChild(stats);
     p_desc.appendChild(desc);
 
-    desc_div.appendChild(p_desc);
     desc_div.appendChild(p_stat);
+    desc_div.appendChild(p_desc);
 
     if (item_type == "pps_item") {
         const p_producing = document.createElement("p");
@@ -207,64 +217,68 @@ type Settings = {
 
 //===========================================//
 
+let UPG_IOTA = 0;
+let PPS_IOTA = 0;
+
 class Shop {
     pps_upgrades: PpsUpgrade[] = [
         {
-            id: 0,
+            id: PPS_IOTA++,
             name: "Keyboard button",
             desc: "A button on an old keyboard.",
             cost: 80,
             gives: 0.4
         },
         {
-            id: 1,
+            id: PPS_IOTA++,
             name: "Trackball",
             desc: "A pointing device.",
-            cost: 440,
-            gives: 1.6,
+            cost: 540,
+            gives: 2.6,
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
-                    value: 0
-                }
-            ]
-        },
-        {
-            id: 2,
-            name: "Drill",
-            desc: "Drill, usually fitted with a driving tool attachment, \
-                   now fitted with a keyboard.",
-            cost: 1960,
-            gives: 4,
-            show_conditions: [
-                {
-                    type: "has_pps_upgrade",
-                    value: 1,
+                    value: 0,
                     amount: 2
                 }
             ]
         },
         {
-            id: 3,
-            name: "Vaxei",
-            desc: "The following readme will serve to document all of Vaxei's skins.",
-            cost: 9420,
-            gives: 18,
+            id: PPS_IOTA++,
+            name: "Drill",
+            desc: "Drill, usually fitted with a driving tool attachment, \
+                   now fitted with a keyboard.",
+            cost: 3770,
+            gives: 6,
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
-                    value: 2,
-                    amount: 3
+                    value: 1,
+                    amount: 4
                 }
             ]
         },
         {
-            id: 4,
+            id: PPS_IOTA++,
+            name: "Vaxei",
+            desc: "The following README will serve to document all of Vaxei's skins.",
+            cost: 29000,
+            gives: 36,
+            show_conditions: [
+                {
+                    type: "has_pps_upgrade",
+                    value: 2,
+                    amount: 4
+                }
+            ]
+        },
+        {
+            id: PPS_IOTA++,
             name: "Cookiezi",
             desc: "Shigetora, better known online as chocomint and formerly as Cookiezi, \
                    is a famous South Korean osu!standard player.",
-            cost: 74500,
-            gives: 55,
+            cost: 205000,
+            gives: 102,
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
@@ -277,7 +291,7 @@ class Shop {
 
     general_upgrades: GeneralUpgrade[] = [
         {
-            id: 0,
+            id: UPG_IOTA++,
             name: "Spicy ramen",
             desc: "You start to sweat.",
             stat: `+0.6 ${TAP_POWER_TEXT}`,
@@ -288,7 +302,7 @@ class Shop {
             }
         },
         {
-            id: 1,
+            id: UPG_IOTA++,
             name: "Bateron switch",
             desc: "You order some switches.",
             stat: "Keyboard buttons are twice more effective.",
@@ -307,7 +321,7 @@ class Shop {
             ]
         },
         {
-            id: 2,
+            id: UPG_IOTA++,
             name: "Mousepad",
             desc: "Finally, less mouse drift.",
             stat: `+1.2 ${TAP_POWER_TEXT}`,
@@ -324,11 +338,11 @@ class Shop {
             ]
         },
         {
-            id: 3,
+            id: UPG_IOTA++,
             name: "Vacom toilet",
             desc: "10 Reasons Why You Might Want a High-Tech Super Toilet.",
             stat: `+3.2 ${TAP_POWER_TEXT}`,
-            cost: 4600,
+            cost: 5600,
             action: {
                 type: "tap_power",
                 value: 3.2
@@ -341,11 +355,30 @@ class Shop {
             ]
         },
         {
-            id: 4,
+            id: UPG_IOTA++,
+            name: "Ultra lube",
+            desc: "You lube you keyboard.",
+            stat: "Keyboard buttons are twice more effective.",
+            cost: 8040,
+            action: {
+                type: "multiplier",
+                item_ids: [0],
+                value: 2
+            },
+            show_conditions: [
+                {
+                    type: "has_pps_upgrade",
+                    value: 0,
+                    amount: 12
+                }
+            ]
+        },
+        {
+            id: UPG_IOTA++,
             name: "Power outlet",
             desc: "The consequences of industrial revolution.",
             stat: "Trackball and drill become twice as effective.",
-            cost: 10640,
+            cost: 15640,
             action: {
                 type: "multiplier",
                 item_ids: [1, 2],
@@ -365,27 +398,7 @@ class Shop {
             ]
         },
         {
-            id: 5,
-            name: "Sugar",
-            desc: "The generic name for sweet-tasting, soluble carbohydrates, \
-                   many of which are used in food.",
-            stat: "Vaxei becomes twice as effective.",
-            cost: 18900,
-            action: {
-                type: "multiplier",
-                item_ids: [3],
-                value: 2
-            },
-            show_conditions: [
-                {
-                    type: "has_upgrade",
-                    value: 4,
-                    amount: 4
-                }
-            ]
-        },
-        {
-            id: 6,
+            id: UPG_IOTA++,
             name: "Mooting",
             desc: "You finally receive your Mooting keyboard.",
             stat: "Click power is doubled.",
@@ -402,13 +415,33 @@ class Shop {
             ]
         },
         {
-            id: 7,
+            id: UPG_IOTA++,
+            name: "Sugar",
+            desc: "The generic name for sweet-tasting, soluble carbohydrates, \
+                   many of which are used in food.",
+            stat: "Vaxei becomes twice as effective.",
+            cost: 164900,
+            action: {
+                type: "multiplier",
+                item_ids: [3],
+                value: 2
+            },
+            show_conditions: [
+                {
+                    type: "has_pps_upgrade",
+                    value: 3,
+                    amount: 4
+                }
+            ]
+        },
+        {
+            id: UPG_IOTA++,
             name: "Cookiezi comeback",
             desc: "Chocomint's Made of Fire HDDT 98.54 full combo. \
                    Without a doubt, one of the most impressive plays ever set in osu! history, \
                    but one that takes some experience to appreciate fully.",
             stat: "Cookiezi becomes twice as effective.",
-            cost: 69420,
+            cost: 569000,
             action: {
                 type: "multiplier",
                 item_ids: [4],
@@ -416,8 +449,8 @@ class Shop {
             },
             show_conditions: [
                 {
-                    type: "has_upgrade",
-                    value: 6,
+                    type: "has_pps_upgrade",
+                    value: 4,
                     amount: 3
                 }
             ]
@@ -657,15 +690,15 @@ class Cookiezi {
             const i = parseInt(s, 10);
             const item = this.shop.pps_upgrades[i]!;
 
-            const button = document
-                .getElementById("button_pps_item" + item.id) as HTMLButtonElement;
+            const cost = document
+                .getElementById("cost_div_pps_item" + item.id) as HTMLParagraphElement;
             const stat = document
                 .getElementById("p_stat_pps_item" + item.id) as HTMLParagraphElement;
 
             const count = this.shop.owned_pps_upgrades[item.id]!;
 
-            button.textContent =
-                `${item.name}, ${format_number(item.cost, 0)}${CURRENCY_TEXT}`;
+            cost.textContent =
+                `${format_number(item.cost, 0)}${CURRENCY_TEXT}`;
             stat.textContent =
                 `+${format_number(item.gives * multipliers[item.id]!, 1)} ${CURRENCY_TEXT}/s`;
 
@@ -782,7 +815,7 @@ class Cookiezi {
             format_number(Math.floor(this.pp), 0) + CURRENCY_TEXT;
 
         PPS_TEXT_ELEMENT.textContent =
-            CURRENCY_TEXT + "/s: " + format_number(this.pps + speed, 1);
+            CURRENCY_TEXT + "/s: " + format_number(this.pps, 1);
 
         TAP_POWER_TEXT_ELEMENT.textContent =
             TAP_POWER_TEXT + ": " + this.power;
@@ -842,6 +875,7 @@ document.addEventListener("keydown", (k) => {
 
         if (cookiezi.settings.is_changing_keys >= KEY_COUNT) {
             cookiezi.settings.is_changing_keys = -1;
+            CHANGE_KEYS_BUTTON_ELEMENT.disabled = false;
             CHANGE_KEYS_BUTTON_ELEMENT.textContent = CHANGE_KEYS_TEXT;
         }
 
@@ -878,7 +912,9 @@ CHANGE_KEYS_BUTTON_ELEMENT.onclick = () => {
     const k1 = cookiezi.settings.keys[0]!;
     const k2 = cookiezi.settings.keys[1]!;
 
+
     cookiezi.settings.is_changing_keys = 0;
+    CHANGE_KEYS_BUTTON_ELEMENT.disabled = true;
 
     KEYS_TEXT_ELEMENT.textContent =
         make_current_keys_text(k1.key, k2.key, cookiezi.settings.is_changing_keys);
