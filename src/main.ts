@@ -8,8 +8,8 @@
 
 /*
 TODO:
- - Optimization of calc functions
- - Separate the files
+ - Optimize the calc functions
+ - Separate this into several files
  - Cascase style sheet
 */
 
@@ -54,17 +54,18 @@ const TPS = 40;
 const TPS_ADJ = Math.floor(TPS - TPS / 11);
 
 const KEY_COUNT = 2;
+const STOPPED_TAPPING_INTERVAL = 2 * 1000;
 
 const CHANGE_KEYS_TEXT
     = "Change keys..."
 const CHANGING_KEYS_TEXT
     = "Press a new key..."
-const CURRENCY_TEXT =
-    "pp";
-const TAP_POWER_TEXT =
-    "pp/tap";
-const FORMAT_CHAR =
-    ",";
+const CURRENCY_TEXT
+    = "pp";
+const TAP_POWER_TEXT
+    = "pp/tap";
+const FORMAT_CHAR
+    = ",";
 
 const PPS_COST_MULTIPLIER = 1.15;
 
@@ -87,25 +88,25 @@ function format_number(n: number, fixed: number): string {
 function make_shop_item(item: PpsUpgrade | GeneralUpgrade, stat_text: string,
     item_type: "pps_item" | "item", click_action: () => void): HTMLLIElement {
 
-    const item_element =
-        document.createElement("li");
-    const buy_button =
-        document.createElement("button");
-    const div =
-        document.createElement("div");
-    const desc_div =
-        document.createElement("div");
-    const p_desc =
-        document.createElement("p");
-    const p_stat =
-        document.createElement("p");
+    const item_element = document
+        .createElement("li");
+    const buy_button = document
+        .createElement("button");
+    const div = document
+        .createElement("div");
+    const desc_div = document
+        .createElement("div");
+    const p_desc = document
+        .createElement("p");
+    const p_stat = document
+        .createElement("p");
 
-    const item_text = document.createTextNode
-        (`${item.name}, ${item.cost}${CURRENCY_TEXT}`);
-    const stats = document.createTextNode
-        (stat_text);
-    const desc = document.createTextNode
-        (item.desc);
+    const item_text = document
+        .createTextNode(`${item.name}, ${item.cost}${CURRENCY_TEXT}`);
+    const stats = document
+        .createTextNode(stat_text);
+    const desc = document
+        .createTextNode(item.desc);
 
     buy_button.onclick = click_action;
 
@@ -223,7 +224,7 @@ class Shop {
             name: "Trackball",
             desc: "A pointing device.",
             cost: 440,
-            gives: 1,
+            gives: 1.6,
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
@@ -234,7 +235,8 @@ class Shop {
         {
             id: 2,
             name: "Drill",
-            desc: "Drill, usually fitted with a driving tool attachment, now fitted with a keyboard.",
+            desc: "Drill, usually fitted with a driving tool attachment, \
+                   now fitted with a keyboard.",
             cost: 1960,
             gives: 4,
             show_conditions: [
@@ -250,7 +252,7 @@ class Shop {
             name: "Vaxei",
             desc: "The following readme will serve to document all of Vaxei's skins.",
             cost: 9420,
-            gives: 10,
+            gives: 18,
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
@@ -262,7 +264,8 @@ class Shop {
         {
             id: 4,
             name: "Cookiezi",
-            desc: "Shigetora, better known online as chocomint and formerly as Cookiezi, is a famous South Korean osu!standard player.",
+            desc: "Shigetora, better known online as chocomint and formerly as Cookiezi, \
+                   is a famous South Korean osu!standard player.",
             cost: 74500,
             gives: 55,
             show_conditions: [
@@ -273,7 +276,7 @@ class Shop {
                 }
             ]
         }
-    ]
+    ];
 
     general_upgrades: GeneralUpgrade[] = [
         {
@@ -291,12 +294,12 @@ class Shop {
             id: 1,
             name: "Bateron switch",
             desc: "You order some switches.",
-            stat: "Keyboard buttons are thrice more effective.",
+            stat: "Keyboard buttons are twice more effective.",
             cost: 1340,
             action: {
                 type: "multiplier",
                 item_ids: [0],
-                value: 3
+                value: 2
             },
             show_conditions: [
                 {
@@ -344,7 +347,7 @@ class Shop {
             id: 4,
             name: "Power outlet",
             desc: "The consequences of industrial revolution.",
-            stat: "Logitech and drill become twice as effective.",
+            stat: "Trackball and drill become twice as effective.",
             cost: 10640,
             action: {
                 type: "multiplier",
@@ -367,7 +370,8 @@ class Shop {
         {
             id: 5,
             name: "Sugar",
-            desc: "The generic name for sweet-tasting, soluble carbohydrates, many of which are used in food.",
+            desc: "The generic name for sweet-tasting, soluble carbohydrates, \
+                   many of which are used in food.",
             stat: "Vaxei becomes twice as effective.",
             cost: 18900,
             action: {
@@ -403,7 +407,9 @@ class Shop {
         {
             id: 7,
             name: "Cookiezi comeback",
-            desc: "Chocomint's Made of Fire HDDT 98.54 full combo. Without a doubt, one of the most impressive plays ever set in osu! history, but one that takes some experience to appreciate fully.",
+            desc: "Chocomint's Made of Fire HDDT 98.54 full combo. \
+                   Without a doubt, one of the most impressive plays ever set in osu! history, \
+                   but one that takes some experience to appreciate fully.",
             stat: "Cookiezi becomes twice as effective.",
             cost: 69420,
             action: {
@@ -419,14 +425,14 @@ class Shop {
                 }
             ]
         }
-    ]
+    ];
 
-    pps_upgrades_bought: number[];
-    upgrades_bought: number[];
+    owned_pps_upgrades: number[];
+    owned_upgrades: boolean[];
 
     constructor() {
-        this.pps_upgrades_bought = new Array<number>(this.pps_upgrades.length).fill(0);
-        this.upgrades_bought = new Array<number>(this.general_upgrades.length).fill(0);
+        this.owned_pps_upgrades = new Array<number>(this.pps_upgrades.length).fill(0);
+        this.owned_upgrades = new Array<boolean>(this.general_upgrades.length).fill(false);
     }
 
     get_multipliers(): Array<number> {
@@ -434,23 +440,26 @@ class Shop {
 
         for (const s in this.general_upgrades) {
             const i = parseInt(s, 10);
-            if (this.upgrades_bought[i] === 0) continue;
+
+            if (this.owned_upgrades[i] === false) continue;
+
             const upgrade = this.general_upgrades[i]!;
 
             if (upgrade.action.type === "multiplier") {
                 for (const j in upgrade.action.item_ids!) {
-                    const id = upgrade.action.item_ids[j]!;
-                    result_array[id] *= this.upgrades_bought[upgrade.id]! * upgrade.action.value;
+                    result_array[upgrade.action.item_ids[j]!] *= upgrade.action.value;
                 }
             }
         }
+
         return result_array;
     }
 
     calc_pps(): number {
         const multipliers = this.get_multipliers()!;
         assert("multipliers is valid length", multipliers.length === this.pps_upgrades.length);
-        return this.pps_upgrades_bought
+
+        return this.owned_pps_upgrades
             .map((a, i) => a * this.pps_upgrades[i]!.gives * multipliers[i]!)
             .reduce((a, b) => a + b);
     }
@@ -459,17 +468,17 @@ class Shop {
         let result = 1;
         let multiplier = 1;
 
-        for (const s in this.upgrades_bought) {
+        for (const s in this.owned_upgrades) {
             const i = parseInt(s, 10);
-            if (this.upgrades_bought[i] === 0) continue;
+            if (this.owned_upgrades[i] === false) continue;
             const upgrade = this.general_upgrades[i];
 
             switch (upgrade?.action.type) {
                 case "tap_power": {
-                    result += upgrade.action.value * this.upgrades_bought[i]!;
+                    result += upgrade.action.value;
                 } break;
                 case "tap_power_multiplier": {
-                    multiplier *= upgrade.action.value * this.upgrades_bought[i]!;
+                    multiplier *= upgrade.action.value;
                 } break;
             }
         }
@@ -477,20 +486,21 @@ class Shop {
     }
 
     buy(item: GeneralUpgrade): void {
-        this.upgrades_bought[item.id] += 1;
+        const button = document
+            .getElementById("button_item" + item.id) as HTMLButtonElement;
 
-        const button = document.getElementById("button_item" + item.id) as HTMLButtonElement;
         button.disabled = true;
+        this.owned_upgrades[item.id] = true;
     }
 
     buy_pps(item: PpsUpgrade): void {
-        this.pps_upgrades_bought[item.id] += 1;
+        this.owned_pps_upgrades[item.id] += 1;
         this.pps_upgrades[item.id]!.cost = Math.floor(this.pps_upgrades[item.id]!.cost * PPS_COST_MULTIPLIER);
     }
 }
 
 class Cookiezi {
-    private amount: number;
+    private pp: number;
     private total: number;
     private power: number;
     private pps: number;
@@ -498,14 +508,14 @@ class Cookiezi {
     settings: Settings;
     shop: Shop;
 
-    constructor(shop: Shop) {
-        this.amount = 0;
+    constructor() {
+        this.pp = 0;
         this.total = 0;
 
         this.power = 1;
         this.pps = 0;
 
-        this.shop = shop;
+        this.shop = new Shop();
 
         this.settings = {
             keys: [
@@ -526,7 +536,7 @@ class Cookiezi {
 
     last_inactive_time = 0;
 
-    clicks = {
+    taps = {
         stopped_interval: 0,
         is_tapping: false,
         tapped: 0,
@@ -538,7 +548,7 @@ class Cookiezi {
     }
 
     get_pp(): number {
-        return this.amount;
+        return this.pp;
     }
 
     get_total(): number {
@@ -548,54 +558,65 @@ class Cookiezi {
     initialize_shop(): void {
         for (const s in this.shop.pps_upgrades) {
             const i = parseInt(s, 10);
+
             const item = this.shop.pps_upgrades[i]!;
             const item_element = make_shop_item(item, `+${item.gives} ${CURRENCY_TEXT}/s`, "pps_item", this.buy_pps(item));
 
-            if (item.show_conditions) item_element.hidden = true;
+            if (item.show_conditions) {
+                item_element.hidden = true;
+            }
+
             PPS_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
         }
 
         for (const s in this.shop.general_upgrades) {
             const i = parseInt(s, 10);
+
             const item = this.shop.general_upgrades[i]!;
             const item_element = make_shop_item(item, item.stat, "item", this.buy(item));
 
-            if (item.show_conditions) item_element.hidden = true;
+            if (item.show_conditions) {
+                item_element.hidden = true;
+            }
+
             GENERAL_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
         }
     }
 
-    check_item_conditions(item: GeneralUpgrade | PpsUpgrade): boolean {
+    meets_show_conditions(item: GeneralUpgrade | PpsUpgrade): boolean {
         for (const s in item.show_conditions!) {
             const i = parseInt(s, 10);
-            const cond = item.show_conditions[i]!;
+            const condition = item.show_conditions[i]!;
 
-            switch (cond.type) {
+            switch (condition.type) {
                 case "has_pps": {
-                    if (this.get_pps() < cond.value)
+                    if (this.get_pps() < condition.value) {
                         return false;
+                    }
                 } break;
+
                 case "has_pps_upgrade": {
-                    assert("has_pps_upgrade value is not out of range",
-                        cond.value < this.shop.pps_upgrades_bought.length);
-                    if (this.shop.pps_upgrades_bought[cond.value]! < (cond.amount || 1)) {
+                    assert("has_pps_upgrade value is not out of range", condition.value < this.shop.owned_pps_upgrades.length);
+                    if (this.shop.owned_pps_upgrades[condition.value]! < (condition.amount || 1)) {
                         return false;
                     }
                 } break;
+
                 case "has_current_pp": {
-                    if (this.get_pp() < cond.value) {
+                    if (this.get_pp() < condition.value) {
                         return false;
                     }
                 } break;
+
                 case "has_upgrade": {
-                    assert("has_upgrade value is not out of range",
-                        cond.value < this.shop.upgrades_bought.length);
-                    if (this.shop.upgrades_bought[cond.value]! < 1) {
+                    assert("has_upgrade value is not out of range", condition.value < this.shop.owned_upgrades.length);
+                    if (!this.shop.owned_upgrades[condition.value]) {
                         return false;
                     }
                 } break;
+
                 case "total_pp": {
-                    if (this.get_total() < cond.value) {
+                    if (this.get_total() < condition.value) {
                         return false;
                     }
                 } break;
@@ -607,12 +628,12 @@ class Cookiezi {
     // TODO: encapsulation Am I Right
     // TODO: these can be optimized by updating a particular item instead of everything
     update_shop_element() {
-        for (const s in this.shop.upgrades_bought) {
+        for (const s in this.shop.owned_upgrades) {
             const i = parseInt(s, 10);
             const item = this.shop.general_upgrades[i]!;
 
             // Disable the button if you bought that upgrade.
-            if (this.shop.upgrades_bought[i]! > 0) {
+            if (this.shop.owned_upgrades[i]) {
                 const button = document
                     .getElementById("button_item" + item.id) as HTMLButtonElement;
 
@@ -624,7 +645,7 @@ class Cookiezi {
 
             // TODO: replace li.hiddem with item.available
             if (item.show_conditions && li.hidden) {
-                if (this.check_item_conditions(item)) {
+                if (this.meets_show_conditions(item)) {
                     li.hidden = false;
                 }
             } else {
@@ -635,7 +656,7 @@ class Cookiezi {
 
     update_pps_shop_element(this: Cookiezi) {
         const multipliers = this.shop.get_multipliers();
-        for (const s in this.shop.pps_upgrades_bought) {
+        for (const s in this.shop.owned_pps_upgrades) {
             const i = parseInt(s, 10);
             const item = this.shop.pps_upgrades[i]!;
 
@@ -644,7 +665,7 @@ class Cookiezi {
             const stat = document
                 .getElementById("p_stat_pps_item" + item.id) as HTMLParagraphElement;
 
-            const count = this.shop.pps_upgrades_bought[item.id]!;
+            const count = this.shop.owned_pps_upgrades[item.id]!;
 
             button.textContent =
                 `${item.name}, ${format_number(item.cost, 0)}${CURRENCY_TEXT}`;
@@ -660,10 +681,11 @@ class Cookiezi {
                 producing.textContent = producing_text;
             }
 
-            const li = document.getElementById("list_pps_item" + item.id) as HTMLLIElement;
+            const li = document
+                .getElementById("list_pps_item" + item.id) as HTMLLIElement;
 
             if (item.show_conditions && li.hidden) {
-                if (this.check_item_conditions(item)) {
+                if (this.meets_show_conditions(item)) {
                     li.hidden = false;
                 }
             } else {
@@ -676,13 +698,16 @@ class Cookiezi {
     buy_pps(item: PpsUpgrade): () => void {
         const self = this;
         return function () {
-            if (self.amount < item.cost) {
+            if (self.pp < item.cost) {
                 alert("Not enough " + CURRENCY_TEXT + " to buy \"" + item.name + "\" :(");
                 return;
             }
+
             self.remove_pp(item.cost);
 
             self.shop.buy_pps(item);
+
+            // TODO: this does more than needed
             self.update_shop_element();
             self.update_pps_shop_element();
 
@@ -693,13 +718,15 @@ class Cookiezi {
     buy(item: GeneralUpgrade): () => void {
         const self = this;
         return function () {
-            if (self.amount < item.cost) {
+            if (self.pp < item.cost) {
                 alert("Not enough " + CURRENCY_TEXT + " to buy \"" + item.name + "\" :(");
                 return;
             }
+
             self.remove_pp(item.cost);
 
             self.shop.buy(item);
+
             self.update_shop_element();
             self.update_pps_shop_element();
 
@@ -713,16 +740,17 @@ class Cookiezi {
         if (k.is_down) return;
 
         k.is_down = true;
-        this.clicks.tapped += 1;
-        this.click();
 
-        this.clicks.is_tapping = true;
+        this.taps.tapped += 1;
+        this.tap();
 
-        clearInterval(this.clicks.stopped_interval);
+        this.taps.is_tapping = true;
 
-        this.clicks.stopped_interval = setTimeout(() => {
-            this.clicks.is_tapping = false;
-        }, 1000)
+        clearInterval(this.taps.stopped_interval);
+
+        this.taps.stopped_interval = setTimeout(() => {
+            this.taps.is_tapping = false;
+        }, STOPPED_TAPPING_INTERVAL)
     }
 
     unpress_key(k: Key): void {
@@ -731,14 +759,14 @@ class Cookiezi {
 
     add_pp(amount: number) {
         this.total += amount;
-        this.amount += amount;
+        this.pp += amount;
     }
 
     remove_pp(amount: number) {
-        this.amount -= amount;
+        this.pp -= amount;
     }
 
-    click(): void {
+    tap(): void {
         this.add_pp(this.power);
     }
 
@@ -747,52 +775,59 @@ class Cookiezi {
     }
 
     update_main_elements(): void {
-        const speed = (this.clicks.tapped * TPS_ADJ / this.clicks.ticks);
-
         // TODO: This doesn't calculate properly.
+        const speed = (this.taps.tapped * TPS_ADJ / this.taps.ticks);
+
         BPM_TEXT_ELEMENT.textContent =
             speed > 0 ? Math.floor(speed * 60 / 4) + " BPM" : ":3c";
+
         AMOUNT_TEXT_ELEMENT.textContent =
-            format_number(Math.floor(this.amount), 0) + CURRENCY_TEXT;
+            format_number(Math.floor(this.pp), 0) + CURRENCY_TEXT;
+
         PPS_TEXT_ELEMENT.textContent =
             CURRENCY_TEXT + "/s: " + format_number(this.pps + speed, 1);
+
         TAP_POWER_TEXT_ELEMENT.textContent =
             TAP_POWER_TEXT + ": " + this.power;
+
         UPGRADES_COUNT_TEXT_ELEMENT.textContent =
-            "Items bought: " + this.shop.pps_upgrades_bought.reduce((a, b) => a + b, 0);
+            "Items bought: " + this.shop.owned_pps_upgrades.reduce((a, b) => a + b, 0);
     }
 
     update_passive_pps(): void {
         this.pps = this.shop.calc_pps();
     }
 
-    update_pps(): void {
-        if (this.clicks.is_tapping) {
-            this.clicks.ticks += 1;
-        } else if (this.clicks.ticks != TPS) {
-            // NOTE:
-            // TPS is the starting value instead of 0, because CP/s is being calculated as:
-            // TOTAL_TAPPED * TPS / TICKS -> TOTAL_TAPPED / SECONDS_PASSED
-            this.clicks.tapped = Math.floor(this.clicks.tapped / this.clicks.ticks * TPS_ADJ);
-            this.clicks.ticks = TPS;
-        } else if (this.clicks.tapped > 0) {
-            this.clicks.tapped -= 1;
+    update_tapping_speed(): void {
+        if (this.taps.is_tapping) {
+            this.taps.ticks += 1;
+        }
+
+        else if (this.taps.ticks != TPS) {
+            // NOTE: TPS is the starting value instead of 0
+            this.taps.tapped = Math.floor(this.taps.tapped / this.taps.ticks * TPS_ADJ);
+            this.taps.ticks = TPS;
+        }
+
+        else if (this.taps.tapped > 0) {
+            this.taps.tapped -= 1;
         }
     }
 
     update(): void {
         this.invoke_pps();
-        this.update_pps();
+        this.update_tapping_speed();
         this.update_main_elements();
     }
 }
 
 //===========================================//
 
-const shop: Shop = new Shop();
-const cookiezi: Cookiezi = new Cookiezi(shop);
+const cookiezi: Cookiezi = new Cookiezi();
 
 cookiezi.initialize_shop();
+
+//=========================================//
 
 setInterval(() => {
     cookiezi.update();
@@ -812,6 +847,7 @@ document.addEventListener("keydown", (k) => {
             cookiezi.settings.is_changing_keys = -1;
             CHANGE_KEYS_BUTTON_ELEMENT.textContent = CHANGE_KEYS_TEXT;
         }
+
         return;
     }
 
@@ -819,6 +855,7 @@ document.addEventListener("keydown", (k) => {
         case k1.key: {
             cookiezi.press_key(k1);
         } break;
+
         case k2.key: {
             cookiezi.press_key(k2);
         } break;
@@ -833,6 +870,7 @@ document.addEventListener("keyup", (k) => {
         case k1.key: {
             cookiezi.unpress_key(k1);
         } break;
+
         case k2.key: {
             cookiezi.unpress_key(k2);
         } break;
@@ -844,19 +882,23 @@ CHANGE_KEYS_BUTTON_ELEMENT.onclick = () => {
     const k2 = cookiezi.settings.keys[1]!;
 
     cookiezi.settings.is_changing_keys = 0;
-    KEYS_TEXT_ELEMENT.textContent = make_current_keys_text(k1.key, k2.key, cookiezi.settings.is_changing_keys);
-    CHANGE_KEYS_BUTTON_ELEMENT.textContent = CHANGING_KEYS_TEXT;
+
+    KEYS_TEXT_ELEMENT.textContent =
+        make_current_keys_text(k1.key, k2.key, cookiezi.settings.is_changing_keys);
+    CHANGE_KEYS_BUTTON_ELEMENT.textContent =
+        CHANGING_KEYS_TEXT;
 }
 
-// Invoke CP/s even when tab is inactive
+// Invoke CP/s even when tab is inactive.
 window.onfocus = () => {
     const current_time = new Date().getTime();
     const time_difference = current_time - cookiezi.last_inactive_time;
+
     if (time_difference > 1000) {
         cookiezi.add_pp(cookiezi.get_pps() * (time_difference / 1000));
     }
 }
 
 window.onblur = () => {
-    cookiezi.last_inactive_time = new Date().getTime();
+    cookiezi.last_inactive_time = (new Date()).getTime();
 }

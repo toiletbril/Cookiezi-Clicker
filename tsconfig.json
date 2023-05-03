@@ -4,10 +4,8 @@
     ],
     "exclude": [],
     "compilerOptions": {
-        "module": "system",
         "outFile": "./main.js",
         "target": "es2020",
-        // Strict mode (9)
         "strict": true,
         "alwaysStrict": true,
         "noImplicitAny": true,
@@ -17,15 +15,12 @@
         "strictFunctionTypes": true,
         "strictPropertyInitialization": true,
         "useUnknownInCatchVariables": true,
-        // No unused code (4)
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "allowUnusedLabels": false,
         "allowUnreachableCode": false,
-        // No implicit code (2)
         "noImplicitOverride": true,
         "noImplicitReturns": true,
-        // Others (5)
         "noUncheckedIndexedAccess": true,
         "noPropertyAccessFromIndexSignature": true,
         "noFallthroughCasesInSwitch": true,
