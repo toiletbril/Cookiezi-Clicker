@@ -65,8 +65,8 @@ const PPS_COST_MULTIPLIER = 1.15;
 
 //===========================================//
 
-function assert(desc: string, cond: boolean): void {
-    if (!cond) throw new Error("Assertion failed: " + desc);
+function assert(desc: string, cond: boolean) {
+    console.assert(cond, desc);
 }
 
 function make_current_keys_text(k1: string, k2: string, n: number): string {
@@ -144,7 +144,7 @@ function make_shop_item(item: PpsUpgrade | GeneralUpgrade, stat_text: string,
     desc_div.appendChild(p_stat);
     desc_div.appendChild(p_desc);
 
-    if (item_type == "pps_item") {
+    if (item_type === "pps_item") {
         const p_producing = document.createElement("p");
         // Number of pps that item is producing: p_producing_pps_item3
         p_producing
@@ -160,18 +160,18 @@ function make_shop_item(item: PpsUpgrade | GeneralUpgrade, stat_text: string,
     return item_element;
 }
 
-function game_end(time_started: number): void {
+// This is all you get >:(
+function game_end(self: Cookiezi): void {
     const current_time = (new Date).getTime()
-    const time_wasted = current_time - time_started;
-
+    const minutes_wasted = Math.floor((current_time - self.started_time) / 1000 / 60);
     const the = "To be fair, you have to have a very high IQ to understand technical mapping. The SV changes are extremely subtle, and without a solid grasp of music theory most of the quality will go over a typical player's head. There's also Monstrata's triangular outlook, which is deftly woven into his mapping - his personal philosophy draws heavily from Pishifat literature, for instance. The fans understand this stuff; they have the intellectual capacity to truly appreciate the Depths of these patterns, to realize that they're not just high quality- they say something deep about MAPPING. As a consequence people who dislike technical maps truly ARE idiots- of course they wouldn't appreciate, for instance, the quality in Sotarks' existencial catchphrase \"this needs more overdone jumps,\" which itself is a Cryptic reference to Monstrata's map quaver. I'm smirking right now just imagining one of those addlepated simpletons scratching their heads in confusion as Natsu's genius unfolds itself on their computer screens. What fools... how I pity them. 😂 And yes by the way, I DO have a Monstrata slider butterfly tattoo. And no, you cannot see it. It's for the ladies' eyes only- And even they have to demonstrate that they're within 5 PP points of my own (preferably lower) beforehand."
 
-    alert(`${the}\n\nYou completed the game in ${Math.floor(time_wasted / 1000 / 60)} minutes.\nThanks for playing.`)
+    alert(`${the}\n\nYou completed the game in ${minutes_wasted} minutes.\nThanks for playing.`)
 }
 
 //===========================================//
 
-type ActionTypeMultiplier
+type ActionTypeMult
     = "multiplier";
 
 type ActionTypeSimple
@@ -179,7 +179,7 @@ type ActionTypeSimple
     | "tap_power_multiplier";
 
 type ActionTypeFunc
-    = "game_end";
+    = "func";
 
 type ShowConditionTypeUpgrade
     = "has_upgrade"
@@ -195,7 +195,8 @@ type ShowCondition
         type: ShowConditionTypeUpgrade,
         item: number,
         amount?: number;
-    } | {
+    }
+    | {
         type: ShowConditionTypeSimple,
         value: number;
     }
@@ -217,7 +218,7 @@ type GeneralUpgrade = {
     desc: string,
     cost: number,
     action: {
-        type: ActionTypeMultiplier,
+        type: ActionTypeMult,
         value: number,
         item_ids: number[]
     } | {
@@ -225,7 +226,7 @@ type GeneralUpgrade = {
         value: number
     } | {
         type: ActionTypeFunc
-        action: (...any: any) => void
+        action: (self: Cookiezi) => any
     },
     show_conditions?: ShowCondition[]
 }
@@ -248,14 +249,14 @@ let PPS_IOTA = 0;
 class Shop {
     pps_upgrades: PpsUpgrade[] = [
         {
-            id: PPS_IOTA++,
+            id: PPS_IOTA++, // 0
             name: "Keyboard button",
             desc: "A button on an old keyboard.",
             cost: 80,
             gives: 0.4
         },
         {
-            id: PPS_IOTA++,
+            id: PPS_IOTA++, // 1
             name: "Trackball",
             desc: "A pointing device.",
             cost: 540,
@@ -269,7 +270,7 @@ class Shop {
             ]
         },
         {
-            id: PPS_IOTA++,
+            id: PPS_IOTA++, // 2
             name: "Drill",
             desc: "Drill, usually fitted with a driving tool attachment, \
                    now fitted with a keyboard.",
@@ -284,7 +285,7 @@ class Shop {
             ]
         },
         {
-            id: PPS_IOTA++,
+            id: PPS_IOTA++, // 3
             name: "Vaxei",
             desc: "The following README will serve to document all of Vaxei's skins.",
             cost: 19000,
@@ -298,12 +299,12 @@ class Shop {
             ]
         },
         {
-            id: PPS_IOTA++,
+            id: PPS_IOTA++, // 4
             name: "Cookiezi",
             desc: "Shigetora, better known online as chocomint and formerly as Cookiezi, \
                    is a famous South Korean osu!standard player.",
             cost: 85000,
-            gives: 132,
+            gives: 164,
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
@@ -313,16 +314,30 @@ class Shop {
             ]
         },
         {
-            id: PPS_IOTA++,
+            id: PPS_IOTA++, // 5
             name: "Aetrna",
-            desc: "The.",
-            cost: 396000,
+            desc: "Once, he fingered a girl. She died.",
+            cost: 496000,
             gives: 1100,
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
                     item: 4,
-                    amount: 12
+                    amount: 6
+                }
+            ]
+        },
+        {
+            id: PPS_IOTA++, // 6
+            name: "peppy",
+            desc: "The creator of the.",
+            cost: 5496000,
+            gives: 12800,
+            show_conditions: [
+                {
+                    type: "has_pps_upgrade",
+                    item: 5,
+                    amount: 6
                 }
             ]
         },
@@ -330,7 +345,7 @@ class Shop {
 
     general_upgrades: GeneralUpgrade[] = [
         {
-            id: UPG_IOTA++,
+            id: UPG_IOTA++, // 0
             name: "Bateron switch",
             desc: "You order some switches.",
             stat: "Keyboard buttons are twice more effective.",
@@ -349,7 +364,7 @@ class Shop {
             ]
         },
         {
-            id: UPG_IOTA++,
+            id: UPG_IOTA++, // 1
             name: "Spicy ramen",
             desc: "You start to sweat.",
             stat: `+0.6 ${TAP_POWER_TEXT}`,
@@ -360,7 +375,7 @@ class Shop {
             }
         },
         {
-            id: UPG_IOTA++,
+            id: UPG_IOTA++, // 2
             name: "Mousepad",
             desc: "Finally, less mouse drift.",
             stat: `+1.2 ${TAP_POWER_TEXT}`,
@@ -377,7 +392,7 @@ class Shop {
             ]
         },
         {
-            id: UPG_IOTA++,
+            id: UPG_IOTA++, // 3
             name: "Vacom toilet",
             desc: "10 Reasons Why You Might Want a High-Tech Super Toilet.",
             stat: `+3.2 ${TAP_POWER_TEXT}`,
@@ -394,7 +409,7 @@ class Shop {
             ]
         },
         {
-            id: UPG_IOTA++,
+            id: UPG_IOTA++, // 4
             name: "Ultra lube",
             desc: "You waste several hours lubing your keyboard.",
             stat: "Keyboard buttons are twice more effective.",
@@ -413,10 +428,10 @@ class Shop {
             ]
         },
         {
-            id: UPG_IOTA++,
+            id: UPG_IOTA++, // 5
             name: "Power outlet",
             desc: "The consequences of industrial revolution.",
-            stat: "Trackball and drill become twice as effective.",
+            stat: "Trackballs and drills become twice as effective.",
             cost: 15640,
             action: {
                 type: "multiplier",
@@ -437,7 +452,7 @@ class Shop {
             ]
         },
         {
-            id: UPG_IOTA++,
+            id: UPG_IOTA++, // 6
             name: "Mooting",
             desc: "You finally receive your Mooting keyboard.",
             stat: "Click power is doubled.",
@@ -454,12 +469,12 @@ class Shop {
             ]
         },
         {
-            id: UPG_IOTA++,
+            id: UPG_IOTA++, // 7
             name: "Sugar",
             desc: "The generic name for sweet-tasting, soluble carbohydrates, \
                    many of which are used in food.",
             stat: "Vaxei becomes twice as effective.",
-            cost: 164900,
+            cost: 84900,
             action: {
                 type: "multiplier",
                 item_ids: [3],
@@ -474,13 +489,32 @@ class Shop {
             ]
         },
         {
-            id: UPG_IOTA++,
+            id: UPG_IOTA++, // 8
+            name: "PP rework",
+            desc: "I am justice, I am honor, I am hope and living water.",
+            stat: "You gain +20% PP/s",
+            cost: 282000,
+            action: {
+                type: "multiplier",
+                item_ids: [0, 1, 2, 3, 4, 5],
+                value: 1.2
+            },
+            show_conditions: [
+                {
+                    type: "has_pps_upgrade",
+                    item: 5,
+                    amount: 2
+                }
+            ]
+        },
+        {
+            id: UPG_IOTA++, // 9
             name: "Cookiezi comeback",
             desc: "Chocomint's Made of Fire HDDT 98.54 full combo. \
                    Without a doubt, one of the most impressive plays ever set in osu! history, \
                    but one that takes some experience to appreciate fully.",
             stat: "Cookiezi becomes twice as effective.",
-            cost: 279000,
+            cost: 379000,
             action: {
                 type: "multiplier",
                 item_ids: [4],
@@ -495,20 +529,88 @@ class Shop {
             ]
         },
         {
-            id: UPG_IOTA++,
+            id: UPG_IOTA++, // 10
+            name: "Rising fevers",
+            desc: "Ascencion to heaven.",
+            stat: "Xeltol is twice more effective.",
+            cost: 7260000,
+            action: {
+                type: "multiplier",
+                item_ids: [5],
+                value: 2
+            },
+            show_conditions: [
+                {
+                    type: "has_pps_upgrade",
+                    item: 5,
+                    amount: 6
+                }
+            ]
+        },
+        {
+            id: UPG_IOTA++, // 11
+            name: "osu! lazer",
+            desc: "2042",
+            stat: "You gain 20% PP/s.",
+            cost: 4060000,
+            action: {
+                type: "multiplier",
+                item_ids: [0, 1, 2, 3, 4, 5],
+                value: 1.2
+            },
+            show_conditions: [
+                {
+                    type: "has_upgrade",
+                    item: 9
+                },
+                {
+                    type: "has_upgrade",
+                    item: 10
+                },
+                {
+                    type: "has_pps_upgrade",
+                    item: 5,
+                    amount: 6
+                }
+            ]
+        },
+        {
+            id: UPG_IOTA++, // 12
+            name: "Private jet",
+            desc: "Make peppy's dreams come true.",
+            stat: "Makes peppy work twice as fast.",
+            cost: 29000000,
+            action: {
+                type: "multiplier",
+                item_ids: [6],
+                value: 2
+            },
+            show_conditions: [
+                {
+                    type: "has_pps_upgrade",
+                    item: 6,
+                    amount: 4
+                },
+            ]
+        },
+        {
+            id: UPG_IOTA++, // 13
             name: "Rank #1",
             desc: "Hopefully this game has given you some osu! of all time.",
             stat: "...",
-            cost: 1690000,
+            cost: 72700000,
             action: {
-                type: "game_end",
+                type: "func",
                 action: game_end
             },
             show_conditions: [
                 {
                     type: "has_upgrade",
-                    item: 8,
-                    amount: 2
+                    item: 11,
+                },
+                {
+                    type: "has_upgrade",
+                    item: 12,
                 }
             ]
         }
@@ -557,6 +659,7 @@ class Shop {
 
         for (const s in this.owned_upgrades) {
             const i = parseInt(s, 10);
+
             if (this.owned_upgrades[i] === false) continue;
             const upgrade = this.general_upgrades[i];
 
@@ -564,6 +667,7 @@ class Shop {
                 case "tap_power": {
                     result += upgrade.action.value;
                 } break;
+
                 case "tap_power_multiplier": {
                     multiplier *= upgrade.action.value;
                 } break;
@@ -592,8 +696,7 @@ class Cookiezi {
     private power: number;
     private pps: number;
 
-    private started_time: number;
-
+    public started_time: number;
     public settings: Settings;
     public shop: Shop;
 
@@ -675,7 +778,8 @@ class Cookiezi {
     }
 
     meets_show_conditions(item: GeneralUpgrade | PpsUpgrade): boolean {
-        for (const s in item.show_conditions!) {
+        if (!item.show_conditions) return true;
+        for (const s in item.show_conditions) {
             const i = parseInt(s, 10);
             const condition = item.show_conditions[i]!;
 
@@ -687,7 +791,8 @@ class Cookiezi {
                 } break;
 
                 case "has_pps_upgrade": {
-                    assert("has_pps_upgrade value is not out of range", condition.item < this.shop.owned_pps_upgrades.length);
+                    assert("has_pps_upgrade value is not out of range",
+                        condition.item < this.shop.owned_pps_upgrades.length);
                     if (this.shop.owned_pps_upgrades[condition.item]! < (condition.amount || 1)) {
                         return false;
                     }
@@ -700,7 +805,8 @@ class Cookiezi {
                 } break;
 
                 case "has_upgrade": {
-                    assert("has_upgrade value is not out of range", condition.item < this.shop.owned_upgrades.length);
+                    assert("has_upgrade value is not out of range",
+                        condition.item < this.shop.owned_upgrades.length);
                     if (!this.shop.owned_upgrades[condition.item]) {
                         return false;
                     }
@@ -717,8 +823,8 @@ class Cookiezi {
     }
 
     // TODO: encapsulation Am I Right
-    // TODO: these can be optimized by updating a particular item instead of everything
-    update_shop_element() {
+    // TODO: update particular item instead of everything
+    update_shop_element(): void {
         for (const s in this.shop.owned_upgrades) {
             const i = parseInt(s, 10);
             const item = this.shop.general_upgrades[i]!;
@@ -745,7 +851,7 @@ class Cookiezi {
         }
     }
 
-    update_pps_shop_element(this: Cookiezi) {
+    update_pps_shop_element(): void {
         const multipliers = this.shop.get_multipliers();
         for (const s in this.shop.owned_pps_upgrades) {
             const i = parseInt(s, 10);
@@ -817,8 +923,8 @@ class Cookiezi {
 
             self.shop.buy(item);
 
-            if (item.action.type === "game_end") {
-                item.action.action(self.started_time);
+            if (item.action.type === "func") {
+                item.action.action(self);
             }
 
             self.update_shop_element();
@@ -921,7 +1027,7 @@ const cookiezi: Cookiezi = new Cookiezi();
 
 cookiezi.initialize_shop();
 
-//=========================================//
+//===========================================//
 
 setInterval(() => {
     cookiezi.update();
