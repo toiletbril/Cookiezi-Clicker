@@ -1,35 +1,43 @@
-//===========================================//
-/*                                            *
+/*============================================*
+*                                             *
 *             Cookiezi Clicker :3             *
 *                     by                      *
 *              toiletbril@github              *
-*                                            */
-//===========================================//
+*                                             *
+*============================================*/
 
 /*
 TODO:
- - Optimize the calc functions
- - Separate this into several files
+ - Make calc functions calc only particular values
+ - Separate this into several files (impossible)
+ - Improve design and make CSS cooler
 */
 
-const AMOUNT_TEXT_ELEMENT
-    = document.getElementById("amount") as HTMLElement;
-const PPS_SHOP_ITEMS_LIST_ELEMENT
-    = document.getElementById("pps_shop_items") as HTMLUListElement;
-const GENERAL_SHOP_ITEMS_LIST_ELEMENT
-    = document.getElementById("general_shop_items") as HTMLUListElement;
-const TAP_POWER_TEXT_ELEMENT
-    = document.getElementById("tap_power") as HTMLElement;
-const PPS_TEXT_ELEMENT
-    = document.getElementById("pps") as HTMLElement;
-const UPGRADES_COUNT_TEXT_ELEMENT
-    = document.getElementById("upgrade_count") as HTMLElement;
-const CHANGE_KEYS_BUTTON_ELEMENT
-    = document.getElementById("change_keys") as HTMLButtonElement;
-const KEYS_TEXT_ELEMENT
-    = document.getElementById("keys") as HTMLButtonElement;
-const BPM_TEXT_ELEMENT
-    = document.getElementById("bpm") as HTMLHeadingElement;
+const DEBUG_MODE = false;
+
+const AMOUNT_TEXT_ELEMENT = document
+    .getElementById("amount") as HTMLElement;
+const PPS_SHOP_ITEMS_LIST_ELEMENT = document
+    .getElementById("pps_shop_items") as HTMLUListElement;
+const GENERAL_SHOP_ITEMS_LIST_ELEMENT = document
+    .getElementById("general_shop_items") as HTMLUListElement;
+const TAP_POWER_TEXT_ELEMENT = document
+    .getElementById("tap_power") as HTMLElement;
+const PPS_TEXT_ELEMENT = document
+    .getElementById("pps") as HTMLElement;
+const UPGRADES_COUNT_TEXT_ELEMENT = document
+    .getElementById("upgrade_count") as HTMLElement;
+const CHANGE_KEYS_BUTTON_ELEMENT = document
+    .getElementById("change_keys") as HTMLButtonElement;
+const KEYS_TEXT_ELEMENT = document
+    .getElementById("keys") as HTMLButtonElement;
+const BPM_TEXT_ELEMENT = document
+    .getElementById("bpm") as HTMLHeadingElement;
+const STATS_LIST_ELEMENT = document
+    .getElementById("stats_list") as HTMLUListElement;
+const GAME_TITLE_ELEMENT = document
+    .getElementById("game_title") as HTMLHeadingElement;
+
 
 assert("All elements are not null",
     !!AMOUNT_TEXT_ELEMENT &&
@@ -39,7 +47,9 @@ assert("All elements are not null",
     !!UPGRADES_COUNT_TEXT_ELEMENT &&
     !!CHANGE_KEYS_BUTTON_ELEMENT &&
     !!KEYS_TEXT_ELEMENT &&
-    !!BPM_TEXT_ELEMENT
+    !!BPM_TEXT_ELEMENT &&
+    !!STATS_LIST_ELEMENT &&
+    !!GAME_TITLE_ELEMENT
 );
 
 const TPS = 40;
@@ -67,6 +77,13 @@ const PPS_COST_MULTIPLIER = 1.15;
 
 function assert(desc: string, cond: boolean) {
     console.assert(cond, desc);
+}
+
+function calc_time_diff_s(prev_time: number): number {
+    const current_time = new Date().getTime();
+    const time_difference = current_time - prev_time;
+
+    return time_difference / 1000;
 }
 
 function make_current_keys_text(k1: string, k2: string, n: number): string {
@@ -162,9 +179,30 @@ function make_shop_item(item: PpsUpgrade | GeneralUpgrade, stat_text: string,
 
 // This is all you get >:(
 function game_end(self: Cookiezi): void {
-    const current_time = (new Date).getTime()
+    const current_time = new Date().getTime()
     const minutes_wasted = Math.floor((current_time - self.started_time) / 1000 / 60);
-    const the = "To be fair, you have to have a very high IQ to understand technical mapping. The SV changes are extremely subtle, and without a solid grasp of music theory most of the quality will go over a typical player's head. There's also Monstrata's triangular outlook, which is deftly woven into his mapping - his personal philosophy draws heavily from Pishifat literature, for instance. The fans understand this stuff; they have the intellectual capacity to truly appreciate the Depths of these patterns, to realize that they're not just high quality- they say something deep about MAPPING. As a consequence people who dislike technical maps truly ARE idiots- of course they wouldn't appreciate, for instance, the quality in Sotarks' existencial catchphrase \"this needs more overdone jumps,\" which itself is a Cryptic reference to Monstrata's map quaver. I'm smirking right now just imagining one of those addlepated simpletons scratching their heads in confusion as Natsu's genius unfolds itself on their computer screens. What fools... how I pity them. 😂 And yes by the way, I DO have a Monstrata slider butterfly tattoo. And no, you cannot see it. It's for the ladies' eyes only- And even they have to demonstrate that they're within 5 PP points of my own (preferably lower) beforehand."
+
+    const the =
+        "To be fair, you have to have a very high IQ to understand technical    \
+        mapping. The SV changes are extremely subtle, and without a solid       \
+        grasp of music theory most of the quality will go over a typical        \
+        player's head. There's also Monstrata's triangular outlook, which is    \
+        deftly woven into his mapping - his personal philosophy draws heavily   \
+        from Pishifat literature, for instance. The fans understand this        \
+        stuff; they have the intellectual capacity to truly appreciate the      \
+        Depths of these patterns, to realize that they're not just high         \
+        quality- they say something deep about MAPPING. As a consequence        \
+        people who dislike technical maps truly ARE idiots- of course they      \
+        wouldn't appreciate, for instance, the quality in Sotarks'              \
+        existencial catchphrase \"this needs more overdone jumps,\" which       \
+        itself is a Cryptic reference to Monstrata's map quaver. I'm smirking   \
+        right now just imagining one of those addlepated simpletons             \
+        scratching their heads in confusion as Natsu's genius unfolds itself    \
+        on their computer screens. What fools... how I pity them. And yes       \
+        by the way, I DO have a Monstrata slider butterfly tattoo.And no,       \
+        you cannot see it.It's for the ladies' eyes only - And even they have   \
+        to demonstrate that they're within 5 PP points of my own (preferably    \
+        lower) beforehand.";
 
     alert(`${the}\n\nYou completed the game in ${minutes_wasted} minutes.\nThanks for playing.`)
 }
@@ -201,6 +239,20 @@ type ShowCondition
         value: number;
     }
 
+type UpgradeActionType
+    = {
+        type: ActionTypeSimple,
+        value: number
+    }
+    | {
+        type: ActionTypeMult,
+        value: number,
+        item_ids: number[]
+    }
+    | {
+        type: ActionTypeFunc
+        action: (self: Cookiezi) => any
+    }
 
 type PpsUpgrade = {
     id: number,
@@ -217,17 +269,7 @@ type GeneralUpgrade = {
     stat: string,
     desc: string,
     cost: number,
-    action: {
-        type: ActionTypeMult,
-        value: number,
-        item_ids: number[]
-    } | {
-        type: ActionTypeSimple,
-        value: number
-    } | {
-        type: ActionTypeFunc
-        action: (self: Cookiezi) => any
-    },
+    action: UpgradeActionType,
     show_conditions?: ShowCondition[]
 }
 
@@ -474,7 +516,7 @@ class Shop {
             desc: "The generic name for sweet-tasting, soluble carbohydrates, \
                    many of which are used in food.",
             stat: "Vaxei becomes twice as effective.",
-            cost: 84900,
+            cost: 104900,
             action: {
                 type: "multiplier",
                 item_ids: [3],
@@ -484,7 +526,7 @@ class Shop {
                 {
                     type: "has_pps_upgrade",
                     item: 3,
-                    amount: 10
+                    amount: 6
                 }
             ]
         },
@@ -502,8 +544,8 @@ class Shop {
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
-                    item: 5,
-                    amount: 2
+                    item: 3,
+                    amount: 10
                 }
             ]
         },
@@ -550,7 +592,7 @@ class Shop {
         {
             id: UPG_IOTA++, // 11
             name: "osu! lazer",
-            desc: "2042",
+            desc: "2042.",
             stat: "You gain 20% PP/s.",
             cost: 4060000,
             action: {
@@ -779,6 +821,7 @@ class Cookiezi {
 
     meets_show_conditions(item: GeneralUpgrade | PpsUpgrade): boolean {
         if (!item.show_conditions) return true;
+
         for (const s in item.show_conditions) {
             const i = parseInt(s, 10);
             const condition = item.show_conditions[i]!;
@@ -823,7 +866,6 @@ class Cookiezi {
     }
 
     // TODO: encapsulation Am I Right
-    // TODO: update particular item instead of everything
     update_shop_element(): void {
         for (const s in this.shop.owned_upgrades) {
             const i = parseInt(s, 10);
@@ -840,7 +882,7 @@ class Cookiezi {
             const li = document
                 .getElementById("list_item" + item.id) as HTMLLIElement;
 
-            // TODO: replace li.hiddem with item.available
+            // TODO: make an array for currently visible items
             if (item.show_conditions && li.hidden) {
                 if (this.meets_show_conditions(item)) {
                     li.hidden = false;
@@ -890,7 +932,6 @@ class Cookiezi {
         }
     }
 
-    // Buy methods return an action that you can put on a button.
     buy_pps(item: PpsUpgrade): () => void {
         const self = this;
         return function () {
@@ -903,7 +944,6 @@ class Cookiezi {
 
             self.shop.buy_pps(item);
 
-            // TODO: this does more than needed
             self.update_shop_element();
             self.update_pps_shop_element();
 
@@ -975,7 +1015,7 @@ class Cookiezi {
     }
 
     update_main_elements(): void {
-        // TODO: This doesn't calculate properly.
+        // NOTE: this doesn't calculate properly and I don't want to redo it for 50th time.
         const speed = (this.taps.tapped * TPS_ADJ / this.taps.ticks);
 
         BPM_TEXT_ELEMENT.textContent =
@@ -1023,85 +1063,97 @@ class Cookiezi {
 
 //===========================================//
 
-const cookiezi: Cookiezi = new Cookiezi();
+window.onload = () => {
+    const cookiezi: Cookiezi = new Cookiezi();
 
-cookiezi.initialize_shop();
+    cookiezi.initialize_shop();
 
-//===========================================//
+    document.addEventListener("keydown", (k) => {
+        const k1 = cookiezi.settings.keys[0]!;
+        const k2 = cookiezi.settings.keys[1]!;
 
-setInterval(() => {
-    cookiezi.update();
-}, 1000 / TPS)
+        if (cookiezi.settings.is_changing_keys >= 0) {
+            cookiezi.settings.keys[cookiezi.settings.is_changing_keys]!.key = k.key;
 
-document.addEventListener("keydown", (k) => {
-    const k1 = cookiezi.settings.keys[0]!;
-    const k2 = cookiezi.settings.keys[1]!;
+            cookiezi.settings.is_changing_keys += 1;
+            KEYS_TEXT_ELEMENT.textContent = make_current_keys_text(k1.key, k2.key, cookiezi.settings.is_changing_keys);
 
-    if (cookiezi.settings.is_changing_keys >= 0) {
-        cookiezi.settings.keys[cookiezi.settings.is_changing_keys]!.key = k.key;
+            if (cookiezi.settings.is_changing_keys >= KEY_COUNT) {
+                cookiezi.settings.is_changing_keys = -1;
+                CHANGE_KEYS_BUTTON_ELEMENT.disabled = false;
+                CHANGE_KEYS_BUTTON_ELEMENT.textContent = CHANGE_KEYS_TEXT;
+            }
 
-        cookiezi.settings.is_changing_keys += 1;
-        KEYS_TEXT_ELEMENT.textContent = make_current_keys_text(k1.key, k2.key, cookiezi.settings.is_changing_keys);
-
-        if (cookiezi.settings.is_changing_keys >= KEY_COUNT) {
-            cookiezi.settings.is_changing_keys = -1;
-            CHANGE_KEYS_BUTTON_ELEMENT.disabled = false;
-            CHANGE_KEYS_BUTTON_ELEMENT.textContent = CHANGE_KEYS_TEXT;
+            return;
         }
 
-        return;
+        switch (k.key.toLowerCase()) {
+            case k1.key: {
+                cookiezi.press_key(k1);
+            } break;
+
+            case k2.key: {
+                cookiezi.press_key(k2);
+            } break;
+        }
+    });
+
+    document.addEventListener("keyup", (k) => {
+        const k1 = cookiezi.settings.keys[0]!;
+        const k2 = cookiezi.settings.keys[1]!;
+
+        switch (k.key.toLowerCase()) {
+            case k1.key: {
+                cookiezi.unpress_key(k1);
+            } break;
+
+            case k2.key: {
+                cookiezi.unpress_key(k2);
+            } break;
+        }
+    });
+
+    CHANGE_KEYS_BUTTON_ELEMENT.onclick = () => {
+        const k1 = cookiezi.settings.keys[0]!;
+        const k2 = cookiezi.settings.keys[1]!;
+
+        cookiezi.settings.is_changing_keys = 0;
+        CHANGE_KEYS_BUTTON_ELEMENT.disabled = true;
+
+        KEYS_TEXT_ELEMENT.textContent =
+            make_current_keys_text(k1.key, k2.key, cookiezi.settings.is_changing_keys);
+        CHANGE_KEYS_BUTTON_ELEMENT.textContent =
+            CHANGING_KEYS_TEXT;
     }
 
-    switch (k.key.toLowerCase()) {
-        case k1.key: {
-            cookiezi.press_key(k1);
-        } break;
-
-        case k2.key: {
-            cookiezi.press_key(k2);
-        } break;
+    // Invoke CP/s even when tab is inactive.
+    window.onfocus = () => {
+        cookiezi.add_pp(cookiezi.get_pps() * calc_time_diff_s(cookiezi.last_inactive_time));
     }
-});
 
-document.addEventListener("keyup", (k) => {
-    const k1 = cookiezi.settings.keys[0]!;
-    const k2 = cookiezi.settings.keys[1]!;
-
-    switch (k.key.toLowerCase()) {
-        case k1.key: {
-            cookiezi.unpress_key(k1);
-        } break;
-
-        case k2.key: {
-            cookiezi.unpress_key(k2);
-        } break;
+    window.onblur = () => {
+        cookiezi.last_inactive_time = new Date().getTime();
     }
-});
 
-CHANGE_KEYS_BUTTON_ELEMENT.onclick = () => {
-    const k1 = cookiezi.settings.keys[0]!;
-    const k2 = cookiezi.settings.keys[1]!;
+    if (DEBUG_MODE) {
+        const amount = 100000;
 
+        const debug_text = document
+            .createTextNode("+" + format_number(amount, 0) + CURRENCY_TEXT)
+        const debug_button = document
+            .createElement("button");
 
-    cookiezi.settings.is_changing_keys = 0;
-    CHANGE_KEYS_BUTTON_ELEMENT.disabled = true;
+        debug_button.setAttribute("id", "debug_button");
+        debug_button.onclick = () => {
+            cookiezi.add_pp(100000);
+        }
 
-    KEYS_TEXT_ELEMENT.textContent =
-        make_current_keys_text(k1.key, k2.key, cookiezi.settings.is_changing_keys);
-    CHANGE_KEYS_BUTTON_ELEMENT.textContent =
-        CHANGING_KEYS_TEXT;
-}
-
-// Invoke CP/s even when tab is inactive.
-window.onfocus = () => {
-    const current_time = new Date().getTime();
-    const time_difference = current_time - cookiezi.last_inactive_time;
-
-    if (time_difference > 1000) {
-        cookiezi.add_pp(cookiezi.get_pps() * (time_difference / 1000));
+        debug_button.appendChild(debug_text);
+        GAME_TITLE_ELEMENT.textContent = GAME_TITLE_ELEMENT.textContent + " (DEBUGGING)"
+        STATS_LIST_ELEMENT.appendChild(debug_button);
     }
-}
 
-window.onblur = () => {
-    cookiezi.last_inactive_time = (new Date()).getTime();
+    setInterval(() => {
+        cookiezi.update();
+    }, 1000 / TPS)
 }

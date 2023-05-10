@@ -5,7 +5,7 @@
     "exclude": [],
     "compilerOptions": {
         "outFile": "scripts/main.js",
-        "target": "es2020",
+        "target": "es2015",
         "strict": true,
         "alwaysStrict": true,
         "noImplicitAny": true,
