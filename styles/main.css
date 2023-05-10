@@ -8,6 +8,22 @@ body {
     font-size: 18px;
 }
 
+.wrapper {
+    min-height: 90vh;
+}
+
+/* i couldn't make footer to be at the bottom properly ;-; */
+.footer {
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    color: darkgray;
+}
+
+.footer p {
+    margin-bottom: 8px;
+}
+
 ul {
     padding: 0;
     list-style: none;
@@ -59,9 +75,9 @@ div {
 }
 
 .general_shop {
-    float: right;
+    float: left;
 }
 
 .pps_shop {
-    float: left;
+    float: right;
 }

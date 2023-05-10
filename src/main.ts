@@ -14,6 +14,7 @@ TODO:
 */
 
 const DEBUG_MODE = false;
+const VERSION = "1 beta";
 
 const AMOUNT_TEXT_ELEMENT = document
     .getElementById("amount") as HTMLElement;
@@ -37,6 +38,8 @@ const STATS_LIST_ELEMENT = document
     .getElementById("stats_list") as HTMLUListElement;
 const GAME_TITLE_ELEMENT = document
     .getElementById("game_title") as HTMLHeadingElement;
+const FOOTER_ELEMENT = document
+    .getElementById("footer_text") as HTMLParagraphElement;
 
 
 assert("All elements are not null",
@@ -331,7 +334,7 @@ class Shop {
             name: "Vaxei",
             desc: "The following README will serve to document all of Vaxei's skins.",
             cost: 19000,
-            gives: 42,
+            gives: 52,
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
@@ -346,7 +349,7 @@ class Shop {
             desc: "Shigetora, better known online as chocomint and formerly as Cookiezi, \
                    is a famous South Korean osu!standard player.",
             cost: 85000,
-            gives: 164,
+            gives: 184,
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
@@ -359,8 +362,8 @@ class Shop {
             id: PPS_IOTA++, // 5
             name: "Aetrna",
             desc: "Once, he fingered a girl. She died.",
-            cost: 496000,
-            gives: 1100,
+            cost: 996000,
+            gives: 1020,
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
@@ -373,8 +376,8 @@ class Shop {
             id: PPS_IOTA++, // 6
             name: "peppy",
             desc: "The creator of the.",
-            cost: 5496000,
-            gives: 12800,
+            cost: 8496000,
+            gives: 9800,
             show_conditions: [
                 {
                     type: "has_pps_upgrade",
@@ -594,7 +597,7 @@ class Shop {
             name: "osu! lazer",
             desc: "2042.",
             stat: "You gain 20% PP/s.",
-            cost: 4060000,
+            cost: 14060000,
             action: {
                 type: "multiplier",
                 item_ids: [0, 1, 2, 3, 4, 5],
@@ -1064,6 +1067,8 @@ class Cookiezi {
 //===========================================//
 
 window.onload = () => {
+    FOOTER_ELEMENT.textContent = `version ${VERSION}`;
+
     const cookiezi: Cookiezi = new Cookiezi();
 
     cookiezi.initialize_shop();
@@ -1136,7 +1141,7 @@ window.onload = () => {
     }
 
     if (DEBUG_MODE) {
-        const amount = 100000;
+        const amount = 10000000;
 
         const debug_text = document
             .createTextNode("+" + format_number(amount, 0) + CURRENCY_TEXT)
@@ -1145,11 +1150,11 @@ window.onload = () => {
 
         debug_button.setAttribute("id", "debug_button");
         debug_button.onclick = () => {
-            cookiezi.add_pp(100000);
+            cookiezi.add_pp(amount);
         }
 
         debug_button.appendChild(debug_text);
-        GAME_TITLE_ELEMENT.textContent = GAME_TITLE_ELEMENT.textContent + " (DEBUGGING)"
+        FOOTER_ELEMENT.textContent = FOOTER_ELEMENT.textContent + " (DEBUGGING)"
         STATS_LIST_ELEMENT.appendChild(debug_button);
     }
 
