@@ -8,12 +8,12 @@
 
 /*
 TODO:
- - Make calc functions calc only particular values
- - Separate this into several files (impossible)
- - Improve design and make CSS cooler
+ - Make calc functions calc only particular values.
+ - Separate this into several files. (impossible)
+ - Improve design and make CSS cooler.
 */
 
-const DEBUG_MODE = false;
+const DEBUG_MODE = true;
 const VERSION = "1 beta";
 
 const AMOUNT_TEXT_ELEMENT = document
@@ -38,9 +38,10 @@ const STATS_LIST_ELEMENT = document
     .getElementById("stats_list") as HTMLUListElement;
 const GAME_TITLE_ELEMENT = document
     .getElementById("game_title") as HTMLHeadingElement;
+const GAME_ELEMENT = document
+    .getElementById("game") as HTMLDivElement;
 const FOOTER_ELEMENT = document
     .getElementById("footer_text") as HTMLParagraphElement;
-
 
 assert("All elements are not null",
     !!AMOUNT_TEXT_ELEMENT &&
@@ -802,7 +803,7 @@ class Cookiezi {
             const item_element = make_shop_item(item, `+${item.gives} ${CURRENCY_TEXT}/s`, "pps_item", this.buy_pps(item));
 
             if (item.show_conditions) {
-                item_element.hidden = true;
+                item_element.classList.add("hidden");
             }
 
             PPS_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
@@ -815,7 +816,7 @@ class Cookiezi {
             const item_element = make_shop_item(item, item.stat, "item", this.buy(item));
 
             if (item.show_conditions) {
-                item_element.hidden = true;
+                item_element.classList.add("hidden");
             }
 
             GENERAL_SHOP_ITEMS_LIST_ELEMENT.appendChild(item_element);
@@ -885,13 +886,12 @@ class Cookiezi {
             const li = document
                 .getElementById("list_item" + item.id) as HTMLLIElement;
 
-            // TODO: make an array for currently visible items
-            if (item.show_conditions && li.hidden) {
+            if (item.show_conditions) {
                 if (this.meets_show_conditions(item)) {
-                    li.hidden = false;
+                    li.classList.remove("hidden");
                 }
             } else {
-                li.hidden = false;
+                li.classList.remove("hidden");
             }
         }
     }
@@ -925,12 +925,12 @@ class Cookiezi {
             const li = document
                 .getElementById("list_pps_item" + item.id) as HTMLLIElement;
 
-            if (item.show_conditions && li.hidden) {
+            if (item.show_conditions) {
                 if (this.meets_show_conditions(item)) {
-                    li.hidden = false;
+                    li.classList.remove("hidden");
                 }
             } else {
-                li.hidden = false;
+                li.classList.remove("hidden");
             }
         }
     }
@@ -1149,16 +1149,21 @@ window.onload = () => {
             .createElement("button");
 
         debug_button.setAttribute("id", "debug_button");
+
         debug_button.onclick = () => {
             cookiezi.add_pp(amount);
         }
 
         debug_button.appendChild(debug_text);
-        FOOTER_ELEMENT.textContent = FOOTER_ELEMENT.textContent + " (DEBUGGING)"
         STATS_LIST_ELEMENT.appendChild(debug_button);
+
+        FOOTER_ELEMENT.textContent = FOOTER_ELEMENT.textContent + " (DEBUGGING)"
     }
 
     setInterval(() => {
         cookiezi.update();
     }, 1000 / TPS)
+
+    // Show the game after everything is done.
+    GAME_ELEMENT.classList.remove("hidden");
 }

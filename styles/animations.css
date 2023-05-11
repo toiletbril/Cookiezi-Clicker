@@ -1,0 +1,33 @@
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.wrapper:not(.hidden) {
+  opacity: 1;
+  animation: fade-in 1000ms forwards;
+}
+
+li:not(.hidden) {
+  opacity: 1;
+  animation: fade-in 500ms forwards;
+}
+
+.hidden {
+  display: none;
+}
