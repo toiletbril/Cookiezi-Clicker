@@ -8,9 +8,10 @@
 
 /*
 TODO:
- - Make calc functions calc only particular values.
- - Separate this into several files. (impossible)
- - Improve design and make CSS cooler.
+    - Make shops cooler.
+    - Somehow make design about osu!.
+    - Make calc functions calc only particular values.
+    - Separate this into several files. (impossible)
 */
 
 const DEBUG_MODE = false;
@@ -1070,7 +1071,6 @@ window.onload = () => {
     FOOTER_ELEMENT.textContent = `version ${VERSION}`;
 
     const cookiezi: Cookiezi = new Cookiezi();
-
     cookiezi.initialize_shop();
 
     document.addEventListener("keydown", (k) => {
