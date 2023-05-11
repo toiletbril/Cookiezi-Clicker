@@ -13,8 +13,8 @@ TODO:
  - Improve design and make CSS cooler.
 */
 
-const DEBUG_MODE = true;
-const VERSION = "1 beta";
+const DEBUG_MODE = false;
+const VERSION = "2 beta";
 
 const AMOUNT_TEXT_ELEMENT = document
     .getElementById("amount") as HTMLElement;
