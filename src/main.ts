@@ -15,7 +15,7 @@ TODO:
 */
 
 const DEBUG_MODE = false;
-const VERSION = "2 beta";
+const VERSION = "3 beta";
 
 const AMOUNT_TEXT_ELEMENT = document
     .getElementById("amount") as HTMLElement;
@@ -41,6 +41,8 @@ const GAME_TITLE_ELEMENT = document
     .getElementById("game_title") as HTMLHeadingElement;
 const GAME_ELEMENT = document
     .getElementById("game") as HTMLDivElement;
+const MAIN_DIV_ELEMENT = document
+    .getElementById("main") as HTMLDivElement;
 const FOOTER_ELEMENT = document
     .getElementById("footer_text") as HTMLParagraphElement;
 
@@ -54,16 +56,20 @@ assert("All elements are not null",
     !!KEYS_TEXT_ELEMENT &&
     !!BPM_TEXT_ELEMENT &&
     !!STATS_LIST_ELEMENT &&
+    !!MAIN_DIV_ELEMENT &&
     !!GAME_TITLE_ELEMENT
 );
 
-const TPS = 40;
+const TPS = 20;
 
 // This is here to account for setTimeout's delays ;(
 const TPS_ADJ = Math.floor(TPS + TPS / 10);
 
 const KEY_COUNT = 2;
 const STOPPED_TAPPING_INTERVAL = 2 * 1000;
+
+const PHONE_KEYS_TEXT = "Tap here to gain pp.";
+const IS_PHONE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 const CHANGE_KEYS_TEXT
     = "Change keys..."
@@ -1118,17 +1124,25 @@ window.onload = () => {
         }
     });
 
-    CHANGE_KEYS_BUTTON_ELEMENT.onclick = () => {
-        const k1 = cookiezi.settings.keys[0]!;
-        const k2 = cookiezi.settings.keys[1]!;
+    // Test for screen orientation.
+    if (IS_PHONE) {
+        const tap = () => cookiezi.tap();
 
-        cookiezi.settings.is_changing_keys = 0;
-        CHANGE_KEYS_BUTTON_ELEMENT.disabled = true;
+        MAIN_DIV_ELEMENT.onclick = tap;
+        KEYS_TEXT_ELEMENT.textContent = PHONE_KEYS_TEXT;
+    } else {
+        CHANGE_KEYS_BUTTON_ELEMENT.onclick = () => {
+            const k1 = cookiezi.settings.keys[0]!;
+            const k2 = cookiezi.settings.keys[1]!;
 
-        KEYS_TEXT_ELEMENT.textContent =
-            make_current_keys_text(k1.key, k2.key, cookiezi.settings.is_changing_keys);
-        CHANGE_KEYS_BUTTON_ELEMENT.textContent =
-            CHANGING_KEYS_TEXT;
+            cookiezi.settings.is_changing_keys = 0;
+            CHANGE_KEYS_BUTTON_ELEMENT.disabled = true;
+
+            KEYS_TEXT_ELEMENT.textContent =
+                make_current_keys_text(k1.key, k2.key, cookiezi.settings.is_changing_keys);
+            CHANGE_KEYS_BUTTON_ELEMENT.textContent =
+                CHANGING_KEYS_TEXT;
+        }
     }
 
     // Invoke CP/s even when tab is inactive.

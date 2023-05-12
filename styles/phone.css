@@ -1,0 +1,35 @@
+/* test for touchscreen. i coudn't figure out how to test for a keyboard :c */
+@media ((hover: none) and (not (pointer: fine))) or (orientation: portrait) {
+    .github svg {
+        height: 50px;
+        width: 50px;
+    }
+
+    .main {
+        font-size: 14px;
+    }
+
+    #change_keys {
+        display: none;
+    }
+
+    .shops {
+        font-size: 12px;
+    }
+
+    .shops h3 {
+        font-size: 16px;
+    }
+
+    .shops li {
+        max-width: none;
+    }
+
+    button:active {
+        background-color: lavender;
+    }
+
+    .shops button {
+        padding: 4px 8px;
+    }
+}
