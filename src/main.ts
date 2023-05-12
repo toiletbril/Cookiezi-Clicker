@@ -11,11 +11,12 @@ TODO:
     - Make shops cooler.
     - Somehow make design about osu!.
     - Make calc functions calc only particular values.
+    - Make stats update less frequently.
     - Separate this into several files. (impossible)
 */
 
 const DEBUG_MODE = false;
-const VERSION = "3 beta";
+const VERSION = "4 beta";
 
 const AMOUNT_TEXT_ELEMENT = document
     .getElementById("amount") as HTMLElement;
@@ -876,7 +877,7 @@ class Cookiezi {
         return true;
     }
 
-    // TODO: encapsulation Am I Right
+    // encapsulation Am I Right
     update_shop_element(): void {
         for (const s in this.shop.owned_upgrades) {
             const i = parseInt(s, 10);
@@ -1124,9 +1125,12 @@ window.onload = () => {
         }
     });
 
-    // Test for screen orientation.
+    // When phone is detected, hide "change keys" button
+    // and instead of asking to press keys, make main div clickable.
     if (IS_PHONE) {
         const tap = () => cookiezi.tap();
+
+        CHANGE_KEYS_BUTTON_ELEMENT.classList.add("hidden");
 
         MAIN_DIV_ELEMENT.onclick = tap;
         KEYS_TEXT_ELEMENT.textContent = PHONE_KEYS_TEXT;
@@ -1146,6 +1150,7 @@ window.onload = () => {
     }
 
     // Invoke CP/s even when tab is inactive.
+    // TODO: PHONE: onfocus is not invoked until you tap somewhere on the screen.
     window.onfocus = () => {
         cookiezi.add_pp(cookiezi.get_pps() * calc_time_diff_s(cookiezi.last_inactive_time));
     }

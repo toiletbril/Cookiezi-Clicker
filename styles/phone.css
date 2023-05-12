@@ -9,16 +9,13 @@
         font-size: 14px;
     }
 
-    #change_keys {
-        display: none;
+    .stats,
+    .shops h3 {
+        font-size: 16px;
     }
 
     .shops {
         font-size: 12px;
-    }
-
-    .shops h3 {
-        font-size: 16px;
     }
 
     .shops li {
