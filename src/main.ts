@@ -58,7 +58,7 @@ assert("All elements are not null",
     !!GAME_TITLE_ELEMENT
 );
 
-const TPS = 20;
+const TPS = 30;
 
 // This is here to account for setTimeout's delays ;(
 const TPS_ADJ = Math.floor(TPS + TPS / 10);
@@ -1025,24 +1025,38 @@ class Cookiezi {
     update_main_elements(): void {
         // NOTE: this doesn't calculate properly and I don't want to redo it for 50th time.
         const speed = (this.taps.tapped * TPS_ADJ / this.taps.ticks);
+        const amount = format_number(Math.floor(this.pp), 0) + CURRENCY_TEXT;
+        const pps = CURRENCY_TEXT + "/s: " + format_number(this.pps, 1);
+        const power = TAP_POWER_TEXT + ": " + this.power;
+        const upgrades = "Items bought: " + this.shop.owned_pps_upgrades.reduce((a, b) => a + b, 0);
 
         // Update bpm only if user is not changing keys
-        if (this.settings.is_changing_keys == -1) {
+        if (this.settings.is_changing_keys == -1 && speed > 0) {
             KEYS_TEXT_ELEMENT.textContent =
-                speed > 0 ? Math.floor(speed * 60 / 4) + " BPM" : ":3c";
+                Math.floor(speed * 60 / 4) + " BPM"
+        } else if (this.settings.is_changing_keys == -1) {
+            const keys_text = make_current_keys_text(this.settings.keys[0]!.key, this.settings.keys[1]!.key, 2);
+
+            if (KEYS_TEXT_ELEMENT.textContent != keys_text) {
+                KEYS_TEXT_ELEMENT.textContent = keys_text;
+            }
+        }
+       
+        if (AMOUNT_TEXT_ELEMENT.textContent != amount) {
+            AMOUNT_TEXT_ELEMENT.textContent = amount;
         }
 
-        AMOUNT_TEXT_ELEMENT.textContent =
-            format_number(Math.floor(this.pp), 0) + CURRENCY_TEXT;
+        if (PPS_TEXT_ELEMENT.textContent != pps) {
+            PPS_TEXT_ELEMENT.textContent = pps;
+        }
 
-        PPS_TEXT_ELEMENT.textContent =
-            CURRENCY_TEXT + "/s: " + format_number(this.pps, 1);
+        if (TAP_POWER_TEXT_ELEMENT.textContent != power) {
+            TAP_POWER_TEXT_ELEMENT.textContent = power;
+        }
 
-        TAP_POWER_TEXT_ELEMENT.textContent =
-            TAP_POWER_TEXT + ": " + this.power;
-
-        UPGRADES_COUNT_TEXT_ELEMENT.textContent =
-            "Items bought: " + this.shop.owned_pps_upgrades.reduce((a, b) => a + b, 0);
+        if (UPGRADES_COUNT_TEXT_ELEMENT.textContent != upgrades) {
+            UPGRADES_COUNT_TEXT_ELEMENT.textContent = upgrades;
+        }
     }
 
     update_passive_pps(): void {
