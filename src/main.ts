@@ -16,7 +16,7 @@ TODO:
 */
 
 const DEBUG_MODE = false;
-const VERSION = "4 beta";
+const VERSION = "5 beta";
 
 const AMOUNT_TEXT_ELEMENT = document
     .getElementById("amount") as HTMLElement;
@@ -34,8 +34,6 @@ const CHANGE_KEYS_BUTTON_ELEMENT = document
     .getElementById("change_keys") as HTMLButtonElement;
 const KEYS_TEXT_ELEMENT = document
     .getElementById("keys") as HTMLButtonElement;
-const BPM_TEXT_ELEMENT = document
-    .getElementById("bpm") as HTMLHeadingElement;
 const STATS_LIST_ELEMENT = document
     .getElementById("stats_list") as HTMLUListElement;
 const GAME_TITLE_ELEMENT = document
@@ -55,7 +53,6 @@ assert("All elements are not null",
     !!UPGRADES_COUNT_TEXT_ELEMENT &&
     !!CHANGE_KEYS_BUTTON_ELEMENT &&
     !!KEYS_TEXT_ELEMENT &&
-    !!BPM_TEXT_ELEMENT &&
     !!STATS_LIST_ELEMENT &&
     !!MAIN_DIV_ELEMENT &&
     !!GAME_TITLE_ELEMENT
@@ -1029,8 +1026,11 @@ class Cookiezi {
         // NOTE: this doesn't calculate properly and I don't want to redo it for 50th time.
         const speed = (this.taps.tapped * TPS_ADJ / this.taps.ticks);
 
-        BPM_TEXT_ELEMENT.textContent =
-            speed > 0 ? Math.floor(speed * 60 / 4) + " BPM" : ":3c";
+        // Update bpm only if user is not changing keys
+        if (this.settings.is_changing_keys == -1) {
+            KEYS_TEXT_ELEMENT.textContent =
+                speed > 0 ? Math.floor(speed * 60 / 4) + " BPM" : ":3c";
+        }
 
         AMOUNT_TEXT_ELEMENT.textContent =
             format_number(Math.floor(this.pp), 0) + CURRENCY_TEXT;
